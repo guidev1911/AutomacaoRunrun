@@ -1,16 +1,14 @@
-import json
+import keyring
 
-print("CONFIGURAÇÃO DO RUNRUN")
+SERVICE_NAME = "RunrunBot"
+
+print("CONFIGURAÇÃO DO RUNRUN\n")
 
 email = input("Email: ")
 senha = input("Senha: ")
 
-config = {
-    "email": email,
-    "senha": senha
-}
+# salva no Windows Credential Manager
+keyring.set_password(SERVICE_NAME, "email", email)
+keyring.set_password(SERVICE_NAME, "senha", senha)
 
-with open("config.json", "w") as f:
-    json.dump(config, f, indent=4)
-
-print("Login salvo com sucesso!")
+print("\nCredenciais salvas com segurança no Windows Credential Manager!")
