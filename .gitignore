@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+venv/
+.env/
+
+# Build / EXE
+build/
+dist/
+*.spec
+*.exe
+
+# Playwright
+playwright/.cache/
+node_modules/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Config (caso ainda exista)
+config.json
+
+# Logs
+*.log

@@ -1,9 +1,15 @@
-import json
 from playwright.sync_api import sync_playwright
+import keyring
 
-# carregar config
-with open("config.json") as f:
-    config = json.load(f)
+SERVICE_NAME = "RunrunBot"
+
+# pegar credenciais do Windows Credential Manager
+email = keyring.get_password(SERVICE_NAME, "email")
+senha = keyring.get_password(SERVICE_NAME, "senha")
+
+if not email or not senha:
+    print("Credenciais não encontradas! Execute o configurar_login.exe primeiro.")
+    exit()
 
 print("Digite os títulos das tarefas (uma por linha).")
 print("Pressione ENTER vazio para iniciar.\n")
@@ -25,8 +31,8 @@ with sync_playwright() as p:
     page.goto("https://app.runrun.it/pt-BR/user_session/new")
 
     # LOGIN
-    page.fill("input[type='email']", config["email"])
-    page.fill("input[type='password']", config["senha"])
+    page.fill("input[type='email']", email)
+    page.fill("input[type='password']", senha)
     page.click("button[type='submit']")
 
     print("Login realizado!")
