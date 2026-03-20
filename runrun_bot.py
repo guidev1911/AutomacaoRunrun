@@ -211,7 +211,7 @@ janela.configure(bg="#eef1f5")
 frame = tk.Frame(janela, bg="white", padx=20, pady=20)
 frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-tk.Label(frame, text="🚀 Automação de Tarefas no Runrun", font=("Segoe UI", 16, "bold"), bg="white").pack()
+tk.Label(frame, text="Automação de Tarefas no Runrun.it", font=("Segoe UI", 16, "bold"), bg="white").pack()
 
 tk.Label(frame, text="Digite o título da tarefa", bg="white", font=("Segoe UI", 10, "bold")).pack(anchor="w")
 
@@ -235,18 +235,38 @@ tk.Label(frame, text="Lista das tarefas a serem adicionadas", bg="white", font=(
 lista = tk.Listbox(frame, height=10)
 lista.pack(fill="both", expand=True)
 
-# 🔥 BOTÃO REMOVER
-tk.Button(frame, text="❌ Remover tarefa selecionada", bg="#e53935", fg="white", command=remover_tarefa).pack(fill="x", pady=5)
+# 🔥 FRAME DOS BOTÕES (lado a lado)
+frame_botoes = tk.Frame(frame, bg="white")
+frame_botoes.pack(fill="x", pady=10)
 
-tk.Button(
-    frame,
-    text="🧹 Limpar todas as tarefas",
+# BOTOES
+
+btn_remover = tk.Button(
+    frame_botoes,
+    text="❌ Remover",
+    bg="#e53935",
+    fg="white",
+    command=remover_tarefa
+)
+btn_remover.pack(side="left", expand=True, fill="x", padx=5)
+
+btn_limpar = tk.Button(
+    frame_botoes,
+    text="🧹 Limpar tudo",
     bg="#ff9800",
     fg="white",
     command=limpar_tarefas
-).pack(fill="x", pady=5)
+)
+btn_limpar.pack(side="left", expand=True, fill="x", padx=5)
 
-tk.Button(frame, text="▶ Iniciar automação", bg="#4CAF50", fg="white", command=iniciar).pack(fill="x", pady=10)
+btn_iniciar = tk.Button(
+    frame_botoes,
+    text="▶ Iniciar",
+    bg="#4CAF50",
+    fg="white",
+    command=iniciar
+)
+btn_iniciar.pack(side="left", expand=True, fill="x", padx=5)
 
 text_log = tk.Text(frame, height=10, bg="#111", fg="#0f0")
 text_log.pack(fill="both", expand=True)
