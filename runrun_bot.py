@@ -87,6 +87,21 @@ def remover_tarefa():
     tarefas.pop(index)
     atualizar_lista()
 
+def limpar_tarefas():
+    if not tarefas:
+        return
+
+    confirmar = messagebox.askyesno(
+        "Confirmar",
+        "Deseja remover TODAS as tarefas?"
+    )
+
+    if not confirmar:
+        return
+
+    tarefas.clear()
+    lista.delete(0, tk.END)
+
 # ------------------ BOT ------------------
 def executar_bot():
     try:
@@ -198,6 +213,8 @@ frame.pack(fill="both", expand=True, padx=20, pady=20)
 
 tk.Label(frame, text="🚀 Automação de Tarefas no Runrun", font=("Segoe UI", 16, "bold"), bg="white").pack()
 
+tk.Label(frame, text="Digite o título da tarefa", bg="white", font=("Segoe UI", 10, "bold")).pack(anchor="w")
+
 entry_titulo = tk.Entry(frame, font=("Segoe UI", 11))
 entry_titulo.pack(fill="x", pady=10, ipady=5)
 
@@ -214,11 +231,20 @@ label_imagem.pack(pady=5)
 
 tk.Button(frame, text="➕ Adicionar tarefa", bg="#1976d2", fg="white", command=adicionar_tarefa).pack(fill="x", pady=10)
 
+tk.Label(frame, text="Lista das tarefas a serem adicionadas", bg="white", font=("Segoe UI", 10, "bold")).pack(anchor="w")
 lista = tk.Listbox(frame, height=10)
 lista.pack(fill="both", expand=True)
 
 # 🔥 BOTÃO REMOVER
 tk.Button(frame, text="❌ Remover tarefa selecionada", bg="#e53935", fg="white", command=remover_tarefa).pack(fill="x", pady=5)
+
+tk.Button(
+    frame,
+    text="🧹 Limpar todas as tarefas",
+    bg="#ff9800",
+    fg="white",
+    command=limpar_tarefas
+).pack(fill="x", pady=5)
 
 tk.Button(frame, text="▶ Iniciar automação", bg="#4CAF50", fg="white", command=iniciar).pack(fill="x", pady=10)
 
