@@ -6,6 +6,8 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 import threading
 import traceback
 import os
+from PIL import ImageGrab
+import tempfile
 
 SERVICE_NAME = "RunrunBot"
 
@@ -41,6 +43,22 @@ def drop_imagem(event):
         label_imagem.config(text=f"📷 {os.path.basename(path)}")
     else:
         messagebox.showwarning("Erro", "Arquivo inválido!")
+
+def colar_imagem():
+    global imagem_temp
+
+    img = ImageGrab.grabclipboard()
+
+    if img is None:
+        messagebox.showwarning("Erro", "Nenhuma imagem encontrada na área de transferência!")
+        return
+
+    # salvar temporariamente
+    temp_path = os.path.join(tempfile.gettempdir(), "runrun_temp.png")
+    img.save(temp_path, "PNG")
+
+    imagem_temp = temp_path
+    label_imagem.config(text="📋 Imagem colada do print")
 
 # ------------------ ADICIONAR ------------------
 def adicionar_tarefa():
@@ -207,6 +225,7 @@ janela = TkinterDnD.Tk()
 janela.title("Runrun Bot - Automação")
 janela.geometry("900x750")  # 🔥 maior
 janela.configure(bg="#eef1f5")
+janela.bind("<Control-v>", lambda e: colar_imagem())
 
 frame = tk.Frame(janela, bg="white", padx=20, pady=20)
 frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -218,13 +237,14 @@ tk.Label(frame, text="Digite o título da tarefa", bg="white", font=("Segoe UI",
 entry_titulo = tk.Entry(frame, font=("Segoe UI", 11))
 entry_titulo.pack(fill="x", pady=10, ipady=5)
 
-drop_area = tk.Label(frame, text="Arraste a imagem aqui OU use o botão abaixo", bg="#ddd", height=4)
+drop_area = tk.Label(frame, text="Arraste, selecione OU cole (Ctrl+V) a imagem", bg="#ddd", height=4)
 drop_area.pack(fill="x", pady=10)
 
 drop_area.drop_target_register(DND_FILES)
 drop_area.dnd_bind("<<Drop>>", drop_imagem)
 
 tk.Button(frame, text="📷 Selecionar imagem", command=selecionar_imagem).pack()
+tk.Button(frame, text="📋 Colar imagem (Ctrl+V)", command=colar_imagem).pack()
 
 label_imagem = tk.Label(frame, text="Nenhuma imagem selecionada", bg="white")
 label_imagem.pack(pady=5)
