@@ -237,17 +237,56 @@ tk.Label(frame, text="Digite o título da tarefa", bg="white", font=("Segoe UI",
 entry_titulo = tk.Entry(frame, font=("Segoe UI", 11))
 entry_titulo.pack(fill="x", pady=10, ipady=5)
 
-drop_area = tk.Label(frame, text="Arraste, selecione OU cole (Ctrl+V) a imagem", bg="#ddd", height=4)
-drop_area.pack(fill="x", pady=10)
+# -------- BLOCO DE IMAGEM --------
+frame_imagem = tk.Frame(frame, bg="#f8f9fb", bd=1, relief="solid")
+frame_imagem.pack(fill="x", pady=10)
+
+tk.Label(
+    frame_imagem,
+    text="Print da OS (imagem da descrição)",
+    bg="#f8f9fb",
+    font=("Segoe UI", 10, "bold")
+).pack(anchor="w", padx=10, pady=(10, 5))
+
+# área drag
+drop_area = tk.Label(
+    frame_imagem,
+    text="📥 Arraste a imagem aqui\nou use os botões abaixo",
+    bg="#e9edf5",
+    fg="#555",
+    height=4,
+    relief="ridge",
+    bd=2
+)
+drop_area.pack(fill="x", padx=10, pady=5)
 
 drop_area.drop_target_register(DND_FILES)
 drop_area.dnd_bind("<<Drop>>", drop_imagem)
 
-tk.Button(frame, text="📷 Selecionar imagem", command=selecionar_imagem).pack()
-tk.Button(frame, text="📋 Colar imagem (Ctrl+V)", command=colar_imagem).pack()
+# botões lado a lado
+frame_botoes_img = tk.Frame(frame_imagem, bg="#f8f9fb")
+frame_botoes_img.pack(fill="x", padx=10, pady=5)
 
-label_imagem = tk.Label(frame, text="Nenhuma imagem selecionada", bg="white")
-label_imagem.pack(pady=5)
+tk.Button(
+    frame_botoes_img,
+    text="📷 Selecionar",
+    command=selecionar_imagem
+).pack(side="left", expand=True, fill="x", padx=5)
+
+tk.Button(
+    frame_botoes_img,
+    text="📋 Colar (Ctrl+V)",
+    command=colar_imagem
+).pack(side="left", expand=True, fill="x", padx=5)
+
+# label status
+label_imagem = tk.Label(
+    frame_imagem,
+    text="Nenhuma imagem selecionada",
+    bg="#f8f9fb",
+    fg="#777"
+)
+label_imagem.pack(pady=(5, 10))
 
 tk.Button(frame, text="➕ Adicionar tarefa", bg="#1976d2", fg="white", command=adicionar_tarefa).pack(fill="x", pady=10)
 
