@@ -190,24 +190,60 @@ def executar_bot():
                 botao_plus.wait_for()
                 botao_plus.click()
 
+# ---------------- TEMPO ----------------
                 campo_tempo = page.locator("input[data-testid='input-editor']").first
                 campo_tempo.wait_for()
 
                 campo_tempo.click()
                 campo_tempo.press("Control+A")
                 campo_tempo.press("Backspace")
-                campo_tempo.type("00:10")
+
+                campo_tempo.type("00:10", delay=50)
+
+
+                campo_tempo.press("Tab")
+
+                page.wait_for_timeout(300)
 
                 page.get_by_test_id("modal-wrapper").get_by_role("button", name="Adicionar").click()
 
-                page.wait_for_selector("input[data-testid='input-editor']", state="hidden")
+                log("⏳ Aguardando tempo ser aplicado...")
 
+                page.wait_for_selector("span[role='button']:has-text('00h10')", timeout=5000)
+
+                log("✅ Tempo aplicado com sucesso")
+                
+# ---------------- FECHAR MODAL ----------------
+                page.locator("[data-testid='close-modal-button']").click()
+                page.wait_for_timeout(500)
+
+# ---------------- FINALIZAR TAREFA ----------------
+                log("⏳ Aguardando botão de entrega...")
+
+                botao_entregar = page.locator("[data-onboarding='taskshow-deliver-button']")
+
+                botao_entregar.wait_for()
+
+                page.wait_for_timeout(1500)
+
+                log("🚀 Tentando entregar tarefa...")
+
+                try:
+                    botao_entregar.click()
+                except:
+                    page.wait_for_timeout(1000)
+                    botao_entregar.click()
+
+                page.wait_for_timeout(2000)
+
+                log("✅ Tarefa entregue!")
+
+# ---------------- VOLTAR ----------------
                 page.goto("https://app.runrun.it/pt-BR/boards")
                 page.wait_for_selector("[data-testid='task-card']")
 
         log("🎉 Processo finalizado com sucesso!")
 
-        # 🔥 LIMPAR LISTA
         tarefas.clear()
         lista.delete(0, tk.END)
 
@@ -223,7 +259,7 @@ def iniciar():
 # ------------------ UI ------------------
 janela = TkinterDnD.Tk()
 janela.title("Runrun Bot - Automação")
-janela.geometry("900x750")  # 🔥 maior
+janela.geometry("900x750")  
 janela.configure(bg="#eef1f5")
 janela.bind("<Control-v>", lambda e: colar_imagem())
 
@@ -294,7 +330,6 @@ tk.Label(frame, text="Lista das tarefas a serem adicionadas", bg="white", font=(
 lista = tk.Listbox(frame, height=10)
 lista.pack(fill="both", expand=True)
 
-# 🔥 FRAME DOS BOTÕES (lado a lado)
 frame_botoes = tk.Frame(frame, bg="white")
 frame_botoes.pack(fill="x", pady=10)
 
