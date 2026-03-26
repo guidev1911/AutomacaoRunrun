@@ -366,3 +366,5 @@ text_log = tk.Text(frame, height=10, bg="#111", fg="#0f0")
 text_log.pack(fill="both", expand=True)
 
 janela.mainloop()
+
+#teste
