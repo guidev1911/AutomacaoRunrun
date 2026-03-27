@@ -8,6 +8,7 @@ import traceback
 import os
 from PIL import ImageGrab
 import tempfile
+from PIL import Image, ImageTk
 
 SERVICE_NAME = "RunrunBot"
 
@@ -31,6 +32,7 @@ def selecionar_imagem():
     if path:
         imagem_temp = path
         label_imagem.config(text=f"📷 {os.path.basename(path)}")
+        mostrar_preview(path)
 
 
 def drop_imagem(event):
@@ -41,6 +43,7 @@ def drop_imagem(event):
     if path.lower().endswith((".png", ".jpg", ".jpeg")):
         imagem_temp = path
         label_imagem.config(text=f"📷 {os.path.basename(path)}")
+        mostrar_preview(path)
     else:
         messagebox.showwarning("Erro", "Arquivo inválido!")
 
@@ -62,8 +65,10 @@ def colar_imagem():
 
     imagem_temp = temp_path
     label_imagem.config(text="📋 Imagem colada do print")
+    mostrar_preview(temp_path)
 
 # ------------------ ADICIONAR ------------------
+
 def adicionar_tarefa():
     global imagem_temp
 
@@ -86,6 +91,10 @@ def adicionar_tarefa():
 
     entry_titulo.delete(0, tk.END)
     label_imagem.config(text="Nenhuma imagem selecionada")
+
+    preview_label.config(image="")
+    preview_label.image = None
+
     imagem_temp = None
 
 
@@ -94,6 +103,25 @@ def atualizar_lista():
 
     for i, t in enumerate(tarefas, start=1):
         lista.insert(tk.END, f"{i}. {t['titulo']}  |  {os.path.basename(t['imagem'])}")
+
+# ------------------ FUNÇÃO DE PREVIEW ------------------
+
+def mostrar_preview(caminho):
+    try:
+        img = Image.open(caminho)
+
+        largura_max = 500
+        altura_max = 350
+
+        img.thumbnail((largura_max, altura_max))
+
+        img_tk = ImageTk.PhotoImage(img)
+
+        preview_label.config(image=img_tk)
+        preview_label.image = img_tk
+
+    except Exception as e:
+        log(f"Erro ao carregar preview: {e}")
 
 # ------------------ REMOVER ------------------
 def remover_tarefa():
@@ -170,10 +198,22 @@ def executar_bot():
                 campo.press("Backspace")
                 campo.type(titulo)
 
+                # conta quantas tasks existem ANTES
+                cards_antes = page.locator("[data-testid='task-card']").count()
+
                 page.get_by_role("button", name="Clonar").click()
 
-                page.get_by_text(titulo, exact=True).first.wait_for()
-                page.get_by_text(titulo, exact=True).first.click()
+                # espera aparecer a nova task
+                page.wait_for_function(
+                    """(qtd) => document.querySelectorAll('[data-testid="task-card"]').length > qtd""",
+                    cards_antes
+                )
+
+                # pega a recém criada (última da lista)
+                cards = page.locator("[data-testid='task-card']")
+                nova_tarefa = cards.nth(cards.count() - 1)
+
+                nova_tarefa.click()
 
                 page.wait_for_selector("button.ql-image")
 
@@ -326,6 +366,9 @@ label_imagem = tk.Label(
     fg="#777"
 )
 label_imagem.pack(pady=(5, 10))
+
+preview_label = tk.Label(frame_imagem, bg="#f8f9fb")
+preview_label.pack(pady=(0, 10))
 
 tk.Button(frame, text="➕ Adicionar tarefa", bg="#1976d2", fg="white", command=adicionar_tarefa).pack(fill="x", pady=10)
 
