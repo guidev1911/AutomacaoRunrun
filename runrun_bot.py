@@ -196,26 +196,41 @@ def executar_bot():
                 campo.click()
                 campo.press("Control+A")
                 campo.press("Backspace")
-                campo.type(titulo)
+                import time
 
-                # conta quantas tasks existem ANTES
-                cards_antes = page.locator("[data-testid='task-card']").count()
+                uid = str(int(time.time() * 1000))  # ID único baseado em timestamp
+                titulo_unico = f"{titulo} ##{uid}"
+
+                campo.type(titulo_unico)
 
                 page.get_by_role("button", name="Clonar").click()
 
-                # espera aparecer a nova task
-                page.wait_for_function(
-                    """(qtd) => document.querySelectorAll('[data-testid="task-card"]').length > qtd""",
-                    cards_antes
-                )
-
-                # pega a recém criada (última da lista)
-                cards = page.locator("[data-testid='task-card']")
-                nova_tarefa = cards.nth(cards.count() - 1)
-
-                nova_tarefa.click()
+                task = page.get_by_text(f"##{uid}", exact=False).first
+                task.wait_for()
+                task.click()
 
                 page.wait_for_selector("button.ql-image")
+
+                # ---------------- LIMPAR TÍTULO ----------------
+                log("✏️ Limpando identificador do título...")
+
+                # 1️⃣ encontra o título correto pelo UID
+                botao_editar = page.locator(f"[data-testid='inline-editor-change']:has-text('##{uid}')")
+                botao_editar.wait_for()
+
+                botao_editar.scroll_into_view_if_needed()
+                botao_editar.click()
+
+                # 2️⃣ espera o textarea aparecer
+                campo_titulo = page.locator("[data-testid='input-editor-without-mask']")
+                campo_titulo.wait_for()
+
+                # 3️⃣ limpa e escreve
+                campo_titulo.fill(titulo)
+
+                # 4️⃣ confirma (React precisa disso)
+                campo_titulo.press("Enter")
+
 
                 with page.expect_file_chooser() as fc_info:
                     page.click("button.ql-image")
@@ -412,4 +427,3 @@ text_log = tk.Text(frame, height=10, bg="#111", fg="#0f0")
 text_log.pack(fill="both", expand=True)
 
 janela.mainloop()
-
