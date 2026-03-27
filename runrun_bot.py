@@ -198,7 +198,7 @@ def executar_bot():
                 campo.press("Backspace")
                 import time
 
-                uid = str(int(time.time() * 1000))  # ID único baseado em timestamp
+                uid = str(int(time.time() * 1000))  
                 titulo_unico = f"{titulo} ##{uid}"
 
                 campo.type(titulo_unico)
@@ -214,22 +214,19 @@ def executar_bot():
                 # ---------------- LIMPAR TÍTULO ----------------
                 log("✏️ Limpando identificador do título...")
 
-                # 1️⃣ encontra o título correto pelo UID
                 botao_editar = page.locator(f"[data-testid='inline-editor-change']:has-text('##{uid}')")
                 botao_editar.wait_for()
 
                 botao_editar.scroll_into_view_if_needed()
                 botao_editar.click()
 
-                # 2️⃣ espera o textarea aparecer
                 campo_titulo = page.locator("[data-testid='input-editor-without-mask']")
                 campo_titulo.wait_for()
 
-                # 3️⃣ limpa e escreve
                 campo_titulo.fill(titulo)
 
-                # 4️⃣ confirma (React precisa disso)
                 campo_titulo.press("Enter")
+
 
 
                 with page.expect_file_chooser() as fc_info:
