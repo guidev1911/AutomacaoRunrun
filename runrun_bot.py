@@ -53,8 +53,11 @@ def colar_imagem():
         messagebox.showwarning("Erro", "Nenhuma imagem encontrada na área de transferência!")
         return
 
-    # salvar temporariamente
-    temp_path = os.path.join(tempfile.gettempdir(), "runrun_temp.png")
+    # criar arquivo único
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+    temp_path = temp_file.name
+    temp_file.close()
+
     img.save(temp_path, "PNG")
 
     imagem_temp = temp_path
@@ -367,4 +370,3 @@ text_log.pack(fill="both", expand=True)
 
 janela.mainloop()
 
-#teste
