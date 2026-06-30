@@ -186,9 +186,30 @@ def executar_bot():
 
                 log(f"📌 Criando: {titulo}")
 
-                primeira = page.locator("[data-testid='task-card']").first
-                primeira.locator("i.fa-ellipsis-h").click()
-                page.locator("i.fa-clone").click()
+                clone_card = page.locator("[data-testid='task-card']").filter(
+                    has_text="CLONE"
+                ).first
+
+                clone_card.wait_for()
+
+                box = clone_card.bounding_box()
+
+                page.mouse.move(
+                    box["x"] + box["width"] - 15,
+                    box["y"] + 15
+                )
+
+                page.wait_for_timeout(200)
+
+                page.mouse.click(
+                    box["x"] + box["width"] - 15,
+                    box["y"] + 15
+                )
+
+                page.wait_for_timeout(200)
+
+                # Clica em Clonar
+                page.locator("i.fa-solid.fa-clone").click()
 
                 campo = page.locator("input[value*='cópia']").first
                 campo.wait_for()
@@ -196,9 +217,10 @@ def executar_bot():
                 campo.click()
                 campo.press("Control+A")
                 campo.press("Backspace")
+
                 import time
 
-                uid = str(int(time.time() * 1000))  
+                uid = str(int(time.time() * 1000))
                 titulo_unico = f"{titulo} ##{uid}"
 
                 campo.type(titulo_unico)
