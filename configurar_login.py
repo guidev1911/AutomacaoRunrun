@@ -1,119 +1,267 @@
+import customtkinter as ctk
 import keyring
-import tkinter as tk
-from tkinter import messagebox
 
-SERVICE_NAME = "RunrunBot"
+SERVICE_NAME_RUNRUN = "RunrunBot"
+SERVICE_NAME_DETRAN = "BOT_DETRAN"
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("dark-blue")
+
 
 def salvar():
     email = entry_email.get()
     senha = entry_senha.get()
+    usuario_intr = entry_intr_user.get()
+    senha_intr = entry_intr_pass.get()
+    usuario_portal = entry_portal_user.get()
+    senha_portal = entry_portal_pass.get()
 
-    if not email or not senha:
-        messagebox.showwarning("Atenção", "Preencha email e senha!")
-        return
+    saved = []
 
-    keyring.set_password(SERVICE_NAME, "email", email)
-    keyring.set_password(SERVICE_NAME, "senha", senha)
+    if email and senha:
+        keyring.set_password(SERVICE_NAME_RUNRUN, "email", email)
+        keyring.set_password(SERVICE_NAME_RUNRUN, "senha", senha)
+        saved.append("Runrun")
 
-    messagebox.showinfo("Sucesso", "Credenciais salvas!\nA automação já pode ser executada.")
+    keyring.set_password(SERVICE_NAME_DETRAN, "usuario_intr", usuario_intr)
+    keyring.set_password(SERVICE_NAME_DETRAN, "senha_intr", senha_intr)
+    keyring.set_password(SERVICE_NAME_DETRAN, "usuario_portal", usuario_portal)
+    keyring.set_password(SERVICE_NAME_DETRAN, "senha_portal", senha_portal)
+    saved.append("DETRAN")
+
+    if saved:
+        message = "✔ Credenciais do " + " e ".join(saved) + " salvas com sucesso!"
+        status.configure(
+            text=message,
+            text_color="#7CFC00"
+        )
+    else:
+        status.configure(
+            text="⚠️ Preencha pelo menos um conjunto de credenciais.",
+            text_color="#F59E0B"
+        )
 
 
 def limpar_credenciais():
-    confirmar = messagebox.askyesno(
-        "Confirmar",
-        "Deseja realmente remover as credenciais salvas?"
+    entry_email.delete(0, "end")
+    entry_senha.delete(0, "end")
+    entry_intr_user.delete(0, "end")
+    entry_intr_pass.delete(0, "end")
+    entry_portal_user.delete(0, "end")
+    entry_portal_pass.delete(0, "end")
+
+    status.configure(
+        text="Campos limpos.",
+        text_color="#FBBF24"
     )
 
-    if not confirmar:
-        return
 
-    try:
-        keyring.delete_password(SERVICE_NAME, "email")
-        keyring.delete_password(SERVICE_NAME, "senha")
-    except:
-        pass
-
-    entry_email.delete(0, tk.END)
-    entry_senha.delete(0, tk.END)
-
-    messagebox.showinfo("Removido", "Credenciais apagadas com sucesso!")
-
-
-# ------------------ JANELA ------------------
-janela = tk.Tk()
-janela.title("Runrun Bot - Configuração")
-janela.geometry("420x360")
+janela = ctk.CTk()
+janela.title("Configurar Credenciais - Bot DETRAN")
+# Ajuste leve: diminuir um pouco a altura para ficar mais equilibrada
+janela.geometry("560x780")
+janela.minsize(540, 740)
 janela.resizable(False, False)
-janela.configure(bg="#eef1f5")
+janela.configure(fg_color="#0f172a")
 
-# ------------------ CARD ------------------
-frame = tk.Frame(janela, bg="white", padx=25, pady=25)
-frame.place(relx=0.5, rely=0.5, anchor="center")
+main_frame = ctk.CTkFrame(
+    janela,
+    corner_radius=24,
+    fg_color="#111827",
+    border_width=1,
+    border_color="#334155"
+)
+main_frame.pack(fill="both", expand=True, padx=18, pady=18)
+main_frame.grid_columnconfigure(0, weight=1)
 
-# ------------------ TÍTULO ------------------
-tk.Label(
-    frame,
-    text="⚙️ Configurar Runrun Bot",
-    font=("Segoe UI", 16, "bold"),
-    bg="white",
-    fg="#333"
-).pack(pady=(0, 10))
+header = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+header.grid(row=0, column=0, sticky="ew", padx=22, pady=(18, 6))
 
-# ------------------ DESCRIÇÃO ------------------
-tk.Label(
-    frame,
-    text="Informe seu email e senha do Runrun.\n"
-         "Esses dados serão usados para executar a automação automaticamente.\n"
-         "Você pode alterar ou remover quando quiser.",
-    font=("Segoe UI", 9),
-    bg="white",
-    fg="#666",
-    justify="center"
-).pack(pady=(0, 15))
+ctk.CTkLabel(
+    header,
+    text="Configurar Credenciais",
+    font=("Segoe UI", 22, "bold"),
+    text_color="#F8FAFC"
+).pack(anchor="w")
 
-# ------------------ EMAIL ------------------
-tk.Label(frame, text="Email", bg="white", fg="#333", font=("Segoe UI", 9, "bold")).pack(anchor="w")
-entry_email = tk.Entry(frame, font=("Segoe UI", 10), bd=1, relief="solid")
-entry_email.pack(fill="x", pady=(5, 15), ipady=5)
+ctk.CTkLabel(
+    header,
+    text="Informe os logins do Runrun e do Bot DETRAN.",
+    font=("Segoe UI", 12),
+    text_color="#94A3B8"
+).pack(anchor="w", pady=(3, 0))
 
-# preencher automaticamente se existir
-email_salvo = keyring.get_password(SERVICE_NAME, "email")
-if email_salvo:
-    entry_email.insert(0, email_salvo)
+fields_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+fields_frame.grid(row=1, column=0, sticky="ew", padx=22, pady=(4, 0))
+fields_frame.grid_columnconfigure(0, weight=1)
 
-# ------------------ SENHA ------------------
-tk.Label(frame, text="Senha", bg="white", fg="#333", font=("Segoe UI", 9, "bold")).pack(anchor="w")
-entry_senha = tk.Entry(frame, show="*", font=("Segoe UI", 10), bd=1, relief="solid")
-entry_senha.pack(fill="x", pady=(5, 20), ipady=5)
+ctk.CTkLabel(
+    fields_frame,
+    text="Login Runrun",
+    font=("Segoe UI", 15, "bold"),
+    anchor="w"
+).grid(row=0, column=0, sticky="w", pady=(4, 6))
 
-# ------------------ BOTÕES ------------------
-btn_salvar = tk.Button(
-    frame,
-    text="Salvar e Ativar Automação",
-    font=("Segoe UI", 10, "bold"),
-    bg="#4CAF50",
-    fg="white",
-    activebackground="#43a047",
-    activeforeground="white",
-    bd=0,
-    cursor="hand2",
+ctk.CTkLabel(
+    fields_frame,
+    text="Email",
+    font=("Segoe UI", 13, "bold"),
+    anchor="w"
+).grid(row=1, column=0, sticky="w", pady=(4, 3))
+
+entry_email = ctk.CTkEntry(
+    fields_frame,
+    height=28,
+    placeholder_text="Digite o email do Runrun"
+)
+entry_email.grid(row=2, column=0, sticky="ew", pady=(0, 8))
+
+ctk.CTkLabel(
+    fields_frame,
+    text="Senha",
+    font=("Segoe UI", 13, "bold"),
+    anchor="w"
+).grid(row=3, column=0, sticky="w", pady=(4, 3))
+
+entry_senha = ctk.CTkEntry(
+    fields_frame,
+    height=28,
+    show="*",
+    placeholder_text="Digite a senha do Runrun"
+)
+entry_senha.grid(row=4, column=0, sticky="ew", pady=(0, 12))
+
+ctk.CTkLabel(
+    fields_frame,
+    text="Finalizar OS no sistema",
+    font=("Segoe UI", 15, "bold"),
+    anchor="w"
+).grid(row=5, column=0, sticky="w", pady=(8, 6))
+
+ctk.CTkLabel(
+    fields_frame,
+    text="Usuário Intranet",
+    font=("Segoe UI", 13, "bold"),
+    anchor="w"
+).grid(row=6, column=0, sticky="w", pady=(4, 3))
+
+entry_intr_user = ctk.CTkEntry(
+    fields_frame,
+    height=28,
+    placeholder_text="Digite o usuário da intranet"
+)
+entry_intr_user.grid(row=7, column=0, sticky="ew", pady=(0, 8))
+
+ctk.CTkLabel(
+    fields_frame,
+    text="Senha Intranet",
+    font=("Segoe UI", 13, "bold"),
+    anchor="w"
+).grid(row=8, column=0, sticky="w", pady=(4, 3))
+
+entry_intr_pass = ctk.CTkEntry(
+    fields_frame,
+    height=28,
+    show="*",
+    placeholder_text="Digite a senha da intranet"
+)
+entry_intr_pass.grid(row=9, column=0, sticky="ew", pady=(0, 8))
+
+ctk.CTkLabel(
+    fields_frame,
+    text="Usuário Portal",
+    font=("Segoe UI", 13, "bold"),
+    anchor="w"
+).grid(row=10, column=0, sticky="w", pady=(4, 3))
+
+entry_portal_user = ctk.CTkEntry(
+    fields_frame,
+    height=28,
+    placeholder_text="Digite o usuário do portal"
+)
+entry_portal_user.grid(row=11, column=0, sticky="ew", pady=(0, 8))
+
+ctk.CTkLabel(
+    fields_frame,
+    text="Senha Portal",
+    font=("Segoe UI", 13, "bold"),
+    anchor="w"
+).grid(row=12, column=0, sticky="w", pady=(4, 3))
+
+entry_portal_pass = ctk.CTkEntry(
+    fields_frame,
+    height=28,
+    show="*",
+    placeholder_text="Digite a senha do portal"
+)
+entry_portal_pass.grid(row=13, column=0, sticky="ew", pady=(0, 4))
+
+saved_email = keyring.get_password(SERVICE_NAME_RUNRUN, "email")
+saved_senha = keyring.get_password(SERVICE_NAME_RUNRUN, "senha")
+saved_usuario_intr = keyring.get_password(SERVICE_NAME_DETRAN, "usuario_intr")
+saved_senha_intr = keyring.get_password(SERVICE_NAME_DETRAN, "senha_intr")
+saved_usuario_portal = keyring.get_password(SERVICE_NAME_DETRAN, "usuario_portal")
+saved_senha_portal = keyring.get_password(SERVICE_NAME_DETRAN, "senha_portal")
+
+if saved_email:
+    entry_email.insert(0, saved_email)
+
+if saved_senha:
+    entry_senha.insert(0, saved_senha)
+
+if saved_usuario_intr:
+    entry_intr_user.insert(0, saved_usuario_intr)
+
+if saved_senha_intr:
+    entry_intr_pass.insert(0, saved_senha_intr)
+
+if saved_usuario_portal:
+    entry_portal_user.insert(0, saved_usuario_portal)
+
+if saved_senha_portal:
+    entry_portal_pass.insert(0, saved_senha_portal)
+
+buttons_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+buttons_frame.grid(row=2, column=0, sticky="w", padx=22, pady=(8, 0))
+
+btn_salvar = ctk.CTkButton(
+    buttons_frame,
+    text="Salvar Credenciais",
+    width=200,
+    height=40,
+    corner_radius=12,
     command=salvar
 )
-btn_salvar.pack(fill="x", ipady=8)
+btn_salvar.pack(side="left", padx=(0, 12))
 
-btn_limpar = tk.Button(
-    frame,
-    text="🗑️ Limpar credenciais",
-    font=("Segoe UI", 9),
-    bg="#e53935",
-    fg="white",
-    activebackground="#d32f2f",
-    activeforeground="white",
-    bd=0,
-    cursor="hand2",
+btn_limpar = ctk.CTkButton(
+    buttons_frame,
+    text="Limpar",
+    width=120,
+    height=40,
+    corner_radius=12,
+    fg_color="#475569",
+    hover_color="#334155",
     command=limpar_credenciais
 )
-btn_limpar.pack(fill="x", pady=(10, 0), ipady=6)
+btn_limpar.pack(side="left")
 
-# ------------------ RODAR ------------------
+status = ctk.CTkLabel(
+    main_frame,
+    text="",
+    font=("Segoe UI", 12),
+    wraplength=520,
+    text_color="#E2E8F0"
+)
+status.grid(row=3, column=0, sticky="w", padx=22, pady=(8, 12))
+
 janela.mainloop()
