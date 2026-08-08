@@ -9,77 +9,216 @@ import os
 from PIL import ImageGrab
 import tempfile
 from PIL import Image, ImageTk
+import customtkinter as ctk
+import time
+
+
 
 SERVICE_NAME = "RunrunBot"
 
 tarefas = []
 imagem_temp = None
+preview_image = None
 
-# ------------------ LOG ------------------
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("dark-blue")
+
+
+BG_COLOR = "#0f172a"
+CARD_COLOR = "#111827"
+BORDER_COLOR = "#334155"
+
+TEXT_PRIMARY = "#F8FAFC"
+TEXT_SECONDARY = "#94A3B8"
+
+INPUT_COLOR = "#1E293B"
+INPUT_BORDER = "#475569"
+
+BLUE = "#2563EB"
+BLUE_HOVER = "#1D4ED8"
+
+RED = "#DC2626"
+RED_HOVER = "#B91C1C"
+
+ORANGE = "#F59E0B"
+ORANGE_HOVER = "#D97706"
+
+GREEN = "#16A34A"
+GREEN_HOVER = "#15803D"
+
+
 def log(msg):
-    text_log.insert(tk.END, msg + "\n")
-    text_log.see(tk.END)
 
-# ------------------ IMAGEM ------------------
+    text_log.configure(state="normal")
+
+    text_log.insert(
+        "end",
+        msg + "\n"
+    )
+
+    text_log.see("end")
+
+    text_log.configure(state="disabled")
+
+
+
 def selecionar_imagem():
+
     global imagem_temp
 
     path = filedialog.askopenfilename(
         title="Selecionar imagem",
-        filetypes=[("Imagens", "*.png *.jpg *.jpeg")]
+        filetypes=[
+            (
+                "Imagens",
+                "*.png *.jpg *.jpeg"
+            )
+        ]
     )
 
-    if path:
-        imagem_temp = path
-        label_imagem.config(text=f"📷 {os.path.basename(path)}")
-        mostrar_preview(path)
+    if not path:
+        return
 
+    imagem_temp = path
+
+    label_imagem.configure(
+        text=f"📷 {os.path.basename(path)}"
+    )
+
+    mostrar_preview(path)
 
 def drop_imagem(event):
+
     global imagem_temp
 
-    path = event.data.strip().replace("{", "").replace("}", "")
+    path = event.data.strip()
 
-    if path.lower().endswith((".png", ".jpg", ".jpeg")):
-        imagem_temp = path
-        label_imagem.config(text=f"📷 {os.path.basename(path)}")
-        mostrar_preview(path)
-    else:
-        messagebox.showwarning("Erro", "Arquivo inválido!")
+    if path.startswith("{") and path.endswith("}"):
+        path = path[1:-1]
+
+    if not path.lower().endswith(
+        (".png", ".jpg", ".jpeg")
+    ):
+
+        messagebox.showwarning(
+            "Arquivo inválido",
+            "Selecione uma imagem PNG, JPG ou JPEG."
+        )
+
+        return
+
+    imagem_temp = path
+
+    label_imagem.configure(
+        text=f"📷 {os.path.basename(path)}"
+    )
+
+    mostrar_preview(path)
+
 
 def colar_imagem():
+
     global imagem_temp
 
     img = ImageGrab.grabclipboard()
 
     if img is None:
-        messagebox.showwarning("Erro", "Nenhuma imagem encontrada na área de transferência!")
+
+        messagebox.showwarning(
+            "Nenhuma imagem",
+            "Nenhuma imagem encontrada na área de transferência!"
+        )
+
         return
 
-    # criar arquivo único
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+    temp_file = tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".png"
+    )
+
     temp_path = temp_file.name
+
     temp_file.close()
 
-    img.save(temp_path, "PNG")
+    img.save(
+        temp_path,
+        "PNG"
+    )
 
     imagem_temp = temp_path
-    label_imagem.config(text="📋 Imagem colada do print")
+
+    label_imagem.configure(
+        text="📋 Imagem colada do print"
+    )
+
     mostrar_preview(temp_path)
 
-# ------------------ ADICIONAR ------------------
+
+def mostrar_preview(caminho):
+
+    global preview_image
+
+    try:
+
+        img = Image.open(caminho)
+
+        img = img.copy()
+
+        largura_max = 500
+        altura_max = 280
+
+        img.thumbnail(
+            (largura_max, altura_max),
+            Image.Resampling.LANCZOS
+        )
+
+        preview_image = ImageTk.PhotoImage(
+            img,
+            master=preview_label
+        )
+
+        preview_label.configure(
+            image=preview_image,
+            text=""
+        )
+
+    except Exception as e:
+
+        print(
+            f"Erro ao carregar preview: {e}"
+        )
+
+        preview_image = None
+
+        preview_label.configure(
+            image="",
+            text="Erro ao carregar preview"
+        )
 
 def adicionar_tarefa():
+
     global imagem_temp
 
     titulo = entry_titulo.get().strip()
 
     if not titulo:
-        messagebox.showwarning("Atenção", "Informe o título da tarefa!")
+
+        messagebox.showwarning(
+            "Atenção",
+            "Informe o título da tarefa!"
+        )
+
         return
 
+
     if not imagem_temp:
-        messagebox.showwarning("Atenção", "Adicione o print da OS!")
+
+        messagebox.showwarning(
+            "Atenção",
+            "Adicione o print da OS!"
+        )
+
         return
 
     tarefas.append({
@@ -89,54 +228,101 @@ def adicionar_tarefa():
 
     atualizar_lista()
 
-    entry_titulo.delete(0, tk.END)
-    label_imagem.config(text="Nenhuma imagem selecionada")
 
-    preview_label.config(image="")
-    preview_label.image = None
+    entry_titulo.delete(
+        0,
+        "end"
+    )
+
+    limpar_anexo()
+
+def limpar_anexo():
+
+    global imagem_temp
+    global preview_image
 
     imagem_temp = None
+    preview_image = None
 
+    label_imagem.configure(
+        text="Nenhuma imagem selecionada"
+    )
+
+    preview_label.configure(
+        image="",
+        text="Nenhum preview"
+    )
 
 def atualizar_lista():
-    lista.delete(0, tk.END)
 
-    for i, t in enumerate(tarefas, start=1):
-        lista.insert(tk.END, f"{i}. {t['titulo']}  |  {os.path.basename(t['imagem'])}")
+    lista.configure(
+        state="normal"
+    )
 
-# ------------------ FUNÇÃO DE PREVIEW ------------------
+    lista.delete(
+        "1.0",
+        "end"
+    )
 
-def mostrar_preview(caminho):
-    try:
-        img = Image.open(caminho)
+    if not tarefas:
 
-        largura_max = 500
-        altura_max = 350
+        lista.insert(
+            "end",
+            "Nenhuma tarefa adicionada."
+        )
 
-        img.thumbnail((largura_max, altura_max))
+    else:
 
-        img_tk = ImageTk.PhotoImage(img)
+        for i, tarefa in enumerate(
+            tarefas,
+            start=1
+        ):
 
-        preview_label.config(image=img_tk)
-        preview_label.image = img_tk
+            nome_imagem = os.path.basename(
+                tarefa["imagem"]
+            )
 
-    except Exception as e:
-        log(f"Erro ao carregar preview: {e}")
+            lista.insert(
+                "end",
+                f"{i}.  {tarefa['titulo']}\n"
+                f"    📷 {nome_imagem}\n\n"
+            )
 
-# ------------------ REMOVER ------------------
+    lista.configure(
+        state="disabled"
+    )
+
+
 def remover_tarefa():
-    selecionado = lista.curselection()
+
+    selecionado = lista.tag_ranges("sel")
 
     if not selecionado:
-        messagebox.showwarning("Atenção", "Selecione uma tarefa para remover!")
+
+        messagebox.showwarning(
+            "Atenção",
+            "Selecione uma tarefa para remover!"
+        )
+
         return
 
-    index = selecionado[0]
+    linha = int(
+        lista.index(
+            selecionado[0]
+        ).split(".")[0]
+    )
 
-    tarefas.pop(index)
-    atualizar_lista()
+    index = linha - 1
+
+    if 0 <= index < len(tarefas):
+
+        tarefas.pop(index)
+
+        atualizar_lista()
+
 
 def limpar_tarefas():
+
     if not tarefas:
         return
 
@@ -149,46 +335,101 @@ def limpar_tarefas():
         return
 
     tarefas.clear()
-    lista.delete(0, tk.END)
 
-# ------------------ BOT ------------------
+    atualizar_lista()
+
+
+
 def executar_bot():
+
     try:
+
         if not tarefas:
-            messagebox.showwarning("Atenção", "Adicione pelo menos uma tarefa!")
+
+            messagebox.showwarning(
+                "Atenção",
+                "Adicione pelo menos uma tarefa!"
+            )
+
             return
 
-        email = keyring.get_password(SERVICE_NAME, "email")
-        senha = keyring.get_password(SERVICE_NAME, "senha")
+        email = keyring.get_password(
+            SERVICE_NAME,
+            "email"
+        )
+
+        senha = keyring.get_password(
+            SERVICE_NAME,
+            "senha"
+        )
 
         if not email or not senha:
-            messagebox.showerror("Erro", "Credenciais não encontradas!")
+
+            messagebox.showerror(
+                "Erro",
+                "Credenciais não encontradas!"
+            )
+
             return
 
-        log("🚀 Iniciando automação...")
+        log(
+            "🚀 Iniciando automação..."
+        )
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, channel="chrome")
+
+            browser = p.chromium.launch(
+                headless=False,
+                channel="chrome"
+            )
+
             page = browser.new_page()
 
-            page.goto("https://app.runrun.it/pt-BR/user_session/new")
+            page.goto(
+                "https://app.runrun.it/pt-BR/user_session/new"
+            )
 
-            page.fill("input[type='email']", email)
-            page.fill("input[type='password']", senha)
-            page.click("button[type='submit']")
+            page.fill(
+                "input[type='email']",
+                email
+            )
 
-            page.wait_for_selector("[data-testid='task-card']")
-            log("✅ Login realizado")
+            page.fill(
+                "input[type='password']",
+                senha
+            )
+
+            page.click(
+                "button[type='submit']"
+            )
+
+            page.wait_for_selector(
+                "[data-testid='task-card']"
+            )
+
+            log(
+                "✅ Login realizado"
+            )
 
             for t in tarefas:
+
                 titulo = t["titulo"]
                 imagem = t["imagem"]
 
-                log(f"📌 Criando: {titulo}")
+                log(
+                    f"📌 Criando: {titulo}"
+                )
 
-                clone_card = page.locator("[data-testid='task-card']").filter(
-                    has_text="CLONE"
-                ).first
+                clone_card = (
+                    page
+                    .locator(
+                        "[data-testid='task-card']"
+                    )
+                    .filter(
+                        has_text="CLONE"
+                    )
+                    .first
+                )
 
                 clone_card.wait_for()
 
@@ -199,250 +440,813 @@ def executar_bot():
                     box["y"] + 15
                 )
 
-                page.wait_for_timeout(200)
+                page.wait_for_timeout(
+                    200
+                )
 
                 page.mouse.click(
                     box["x"] + box["width"] - 15,
                     box["y"] + 15
                 )
 
-                page.wait_for_timeout(200)
+                page.wait_for_timeout(
+                    200
+                )
 
-                # Clica em Clonar
-                page.locator("i.fa-solid.fa-clone").click()
+                page.locator(
+                    "i.fa-solid.fa-clone"
+                ).click()
 
-                campo = page.locator("input[value*='cópia']").first
+                campo = (
+                    page
+                    .locator(
+                        "input[value*='cópia']"
+                    )
+                    .first
+                )
+
                 campo.wait_for()
 
                 campo.click()
-                campo.press("Control+A")
-                campo.press("Backspace")
 
-                import time
+                campo.press(
+                    "Control+A"
+                )
 
-                uid = str(int(time.time() * 1000))
-                titulo_unico = f"{titulo} ##{uid}"
+                campo.press(
+                    "Backspace"
+                )
 
-                campo.type(titulo_unico)
+                uid = str(
+                    int(time.time() * 1000)
+                )
 
-                page.get_by_role("button", name="Clonar").click()
+                titulo_unico = (
+                    f"{titulo} ##{uid}"
+                )
 
-                task = page.get_by_text(f"##{uid}", exact=False).first
+                campo.type(
+                    titulo_unico
+                )
+
+                page.get_by_role(
+                    "button",
+                    name="Clonar"
+                ).click()
+
+                task = (
+                    page
+                    .get_by_text(
+                        f"##{uid}",
+                        exact=False
+                    )
+                    .first
+                )
+
                 task.wait_for()
+
                 task.click()
 
-                page.wait_for_selector("button.ql-image")
+                page.wait_for_selector(
+                    "button.ql-image"
+                )
 
-                # ---------------- LIMPAR TÍTULO ----------------
-                log("✏️ Limpando identificador do título...")
 
-                botao_editar = page.locator(f"[data-testid='inline-editor-change']:has-text('##{uid}')")
+                log(
+                    "✏️ Limpando identificador do título..."
+                )
+
+                botao_editar = page.locator(
+                    f"[data-testid='inline-editor-change']:has-text('##{uid}')"
+                )
+
                 botao_editar.wait_for()
 
                 botao_editar.scroll_into_view_if_needed()
+
                 botao_editar.click()
 
-                campo_titulo = page.locator("[data-testid='input-editor-without-mask']")
+                campo_titulo = page.locator(
+                    "[data-testid='input-editor-without-mask']"
+                )
+
                 campo_titulo.wait_for()
 
-                campo_titulo.fill(titulo)
+                campo_titulo.fill(
+                    titulo
+                )
 
-                campo_titulo.press("Enter")
-
+                campo_titulo.press(
+                    "Enter"
+                )
 
 
                 with page.expect_file_chooser() as fc_info:
-                    page.click("button.ql-image")
 
-                fc_info.value.set_files(imagem)
+                    page.click(
+                        "button.ql-image"
+                    )
 
-                page.wait_for_timeout(1500)
+                fc_info.value.set_files(
+                    imagem
+                )
 
-                page.wait_for_selector("span[role='button']:has-text('00h00')")
-                page.locator("span[role='button']:has-text('00h00')").click()
+                page.wait_for_timeout(
+                    1500
+                )
 
-                secao = page.locator("div:has-text('Tempo investido')")
-                botao_plus = secao.locator("button:has(i.fa-plus)").first
+
+                page.wait_for_selector(
+                    "span[role='button']:has-text('00h00')"
+                )
+
+                page.locator(
+                    "span[role='button']:has-text('00h00')"
+                ).click()
+
+                secao = page.locator(
+                    "div:has-text('Tempo investido')"
+                )
+
+                botao_plus = (
+                    secao
+                    .locator(
+                        "button:has(i.fa-plus)"
+                    )
+                    .first
+                )
 
                 botao_plus.wait_for()
+
                 botao_plus.click()
 
-# ---------------- TEMPO ----------------
-                campo_tempo = page.locator("input[data-testid='input-editor']").first
+                campo_tempo = (
+                    page
+                    .locator(
+                        "input[data-testid='input-editor']"
+                    )
+                    .first
+                )
+
                 campo_tempo.wait_for()
 
                 campo_tempo.click()
-                campo_tempo.press("Control+A")
-                campo_tempo.press("Backspace")
 
-                campo_tempo.type("00:10", delay=50)
+                campo_tempo.press(
+                    "Control+A"
+                )
+
+                campo_tempo.press(
+                    "Backspace"
+                )
+
+                campo_tempo.type(
+                    "00:10",
+                    delay=50
+                )
+
+                campo_tempo.press(
+                    "Tab"
+                )
+
+                page.wait_for_timeout(
+                    300
+                )
+
+                (
+                    page
+                    .get_by_test_id(
+                        "modal-wrapper"
+                    )
+                    .get_by_role(
+                        "button",
+                        name="Adicionar"
+                    )
+                    .click()
+                )
+
+                log(
+                    "⏳ Aguardando tempo ser aplicado..."
+                )
+
+                page.wait_for_selector(
+                    "span[role='button']:has-text('00h10')",
+                    timeout=5000
+                )
+
+                log(
+                    "✅ Tempo aplicado com sucesso"
+                )
 
 
-                campo_tempo.press("Tab")
+                page.locator(
+                    "[data-testid='close-modal-button']"
+                ).click()
 
-                page.wait_for_timeout(300)
+                page.wait_for_timeout(
+                    500
+                )
 
-                page.get_by_test_id("modal-wrapper").get_by_role("button", name="Adicionar").click()
 
-                log("⏳ Aguardando tempo ser aplicado...")
+                log(
+                    "⏳ Aguardando botão de entrega..."
+                )
 
-                page.wait_for_selector("span[role='button']:has-text('00h10')", timeout=5000)
-
-                log("✅ Tempo aplicado com sucesso")
-                
-# ---------------- FECHAR MODAL ----------------
-                page.locator("[data-testid='close-modal-button']").click()
-                page.wait_for_timeout(500)
-
-# ---------------- FINALIZAR TAREFA ----------------
-                log("⏳ Aguardando botão de entrega...")
-
-                botao_entregar = page.locator("[data-onboarding='taskshow-deliver-button']")
+                botao_entregar = page.locator(
+                    "[data-onboarding='taskshow-deliver-button']"
+                )
 
                 botao_entregar.wait_for()
 
-                page.wait_for_timeout(1500)
+                page.wait_for_timeout(
+                    1500
+                )
 
-                log("🚀 Tentando entregar tarefa...")
+                log(
+                    "🚀 Tentando entregar tarefa..."
+                )
 
                 try:
+
                     botao_entregar.click()
+
                 except:
-                    page.wait_for_timeout(1000)
+
+                    page.wait_for_timeout(
+                        1000
+                    )
+
                     botao_entregar.click()
 
-                page.wait_for_timeout(2000)
+                page.wait_for_timeout(
+                    2000
+                )
 
-                log("✅ Tarefa entregue!")
+                log(
+                    "✅ Tarefa entregue!"
+                )
 
-# ---------------- VOLTAR ----------------
-                page.goto("https://app.runrun.it/pt-BR/boards")
-                page.wait_for_selector("[data-testid='task-card']")
 
-        log("🎉 Processo finalizado com sucesso!")
+                page.goto(
+                    "https://app.runrun.it/pt-BR/boards"
+                )
+
+                page.wait_for_selector(
+                    "[data-testid='task-card']"
+                )
+
+            browser.close()
+
+        log(
+            "🎉 Processo finalizado com sucesso!"
+        )
 
         tarefas.clear()
-        lista.delete(0, tk.END)
+
+        atualizar_lista()
 
     except Exception as e:
-        log("❌ ERRO")
-        log(str(e))
-        traceback.print_exc()
 
-# thread
+        log(
+            "❌ ERRO"
+        )
+
+        log(
+            str(e)
+        )
+
+        log(
+            traceback.format_exc()
+        )
+
+
 def iniciar():
-    threading.Thread(target=executar_bot).start()
 
-# ------------------ UI ------------------
+    threading.Thread(
+        target=executar_bot,
+        daemon=True
+    ).start()
+
+
 janela = TkinterDnD.Tk()
-janela.title("Runrun Bot - Automação")
-janela.geometry("900x750")  
-janela.configure(bg="#eef1f5")
-janela.bind("<Control-v>", lambda e: colar_imagem())
 
-frame = tk.Frame(janela, bg="white", padx=20, pady=20)
-frame.pack(fill="both", expand=True, padx=20, pady=20)
-
-tk.Label(frame, text="Automação de Tarefas no Runrun.it", font=("Segoe UI", 16, "bold"), bg="white").pack()
-
-tk.Label(frame, text="Digite o título da tarefa", bg="white", font=("Segoe UI", 10, "bold")).pack(anchor="w")
-
-entry_titulo = tk.Entry(frame, font=("Segoe UI", 11))
-entry_titulo.pack(fill="x", pady=10, ipady=5)
-
-# -------- BLOCO DE IMAGEM --------
-frame_imagem = tk.Frame(frame, bg="#f8f9fb", bd=1, relief="solid")
-frame_imagem.pack(fill="x", pady=10)
-
-tk.Label(
-    frame_imagem,
-    text="Print da OS (imagem da descrição)",
-    bg="#f8f9fb",
-    font=("Segoe UI", 10, "bold")
-).pack(anchor="w", padx=10, pady=(10, 5))
-
-# área drag
-drop_area = tk.Label(
-    frame_imagem,
-    text="📥 Arraste a imagem aqui\nou use os botões abaixo",
-    bg="#e9edf5",
-    fg="#555",
-    height=4,
-    relief="ridge",
-    bd=2
+janela.title(
+    "Runrun Bot - Automação"
 )
-drop_area.pack(fill="x", padx=10, pady=5)
 
-drop_area.drop_target_register(DND_FILES)
-drop_area.dnd_bind("<<Drop>>", drop_imagem)
+janela.geometry(
+    "900x850"
+)
 
-# botões lado a lado
-frame_botoes_img = tk.Frame(frame_imagem, bg="#f8f9fb")
-frame_botoes_img.pack(fill="x", padx=10, pady=5)
+janela.minsize(
+    850,
+    750
+)
 
-tk.Button(
-    frame_botoes_img,
-    text="📷 Selecionar",
+janela.configure(
+    bg=BG_COLOR
+)
+
+janela.bind(
+    "<Control-v>",
+    lambda e: colar_imagem()
+)
+
+
+main_frame = ctk.CTkFrame(
+    janela,
+    corner_radius=24,
+    fg_color=CARD_COLOR,
+    border_width=1,
+    border_color=BORDER_COLOR
+)
+
+main_frame.pack(
+    fill="both",
+    expand=True,
+    padx=18,
+    pady=18
+)
+
+main_frame.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+main_frame.grid_rowconfigure(
+    4,
+    weight=1
+)
+
+main_frame.grid_rowconfigure(
+    6,
+    weight=1
+)
+
+
+
+header = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+
+header.grid(
+    row=0,
+    column=0,
+    sticky="ew",
+    padx=24,
+    pady=(20, 8)
+)
+
+
+ctk.CTkLabel(
+    header,
+    text="Automação de Tarefas",
+    font=("Segoe UI", 22, "bold"),
+    text_color=TEXT_PRIMARY
+).pack(
+    anchor="w"
+)
+
+
+ctk.CTkLabel(
+    header,
+    text="Crie e finalize tarefas automaticamente no Runrun.it.",
+    font=("Segoe UI", 12),
+    text_color=TEXT_SECONDARY
+).pack(
+    anchor="w",
+    pady=(3, 0)
+)
+
+
+titulo_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+
+titulo_frame.grid(
+    row=1,
+    column=0,
+    sticky="ew",
+    padx=24,
+    pady=(5, 8)
+)
+
+titulo_frame.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+
+ctk.CTkLabel(
+    titulo_frame,
+    text="Título da tarefa",
+    font=("Segoe UI", 13, "bold"),
+    text_color=TEXT_PRIMARY
+).grid(
+    row=0,
+    column=0,
+    sticky="w",
+    pady=(0, 5)
+)
+
+
+entry_titulo = ctk.CTkEntry(
+    titulo_frame,
+    height=36,
+    corner_radius=10,
+    placeholder_text="Digite o título da tarefa",
+    fg_color=INPUT_COLOR,
+    border_color=INPUT_BORDER
+)
+
+entry_titulo.grid(
+    row=1,
+    column=0,
+    sticky="ew"
+)
+
+imagem_frame = ctk.CTkFrame(
+    main_frame,
+    corner_radius=16,
+    fg_color="#0F1A2B",
+    border_width=1,
+    border_color=BORDER_COLOR
+)
+
+imagem_frame.grid(
+    row=2,
+    column=0,
+    sticky="ew",
+    padx=24,
+    pady=8
+)
+
+imagem_frame.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+
+ctk.CTkLabel(
+    imagem_frame,
+    text="Print da OS",
+    font=("Segoe UI", 15, "bold"),
+    text_color=TEXT_PRIMARY
+).grid(
+    row=0,
+    column=0,
+    sticky="w",
+    padx=16,
+    pady=(14, 2)
+)
+
+
+ctk.CTkLabel(
+    imagem_frame,
+    text="Adicione a imagem que será inserida na descrição da tarefa.",
+    font=("Segoe UI", 11),
+    text_color=TEXT_SECONDARY
+).grid(
+    row=1,
+    column=0,
+    sticky="w",
+    padx=16,
+    pady=(0, 10)
+)
+
+
+
+drop_area = ctk.CTkLabel(
+    imagem_frame,
+    text="📥\nArraste a imagem aqui\nou utilize uma das opções abaixo",
+    height=85,
+    corner_radius=12,
+    fg_color="#1E293B",
+    text_color=TEXT_SECONDARY,
+    font=("Segoe UI", 12)
+)
+
+drop_area.grid(
+    row=2,
+    column=0,
+    sticky="ew",
+    padx=16,
+    pady=(0, 10)
+)
+
+
+drop_area.drop_target_register(
+    DND_FILES
+)
+
+drop_area.dnd_bind(
+    "<<Drop>>",
+    drop_imagem
+)
+
+
+botoes_imagem = ctk.CTkFrame(
+    imagem_frame,
+    fg_color="transparent"
+)
+
+botoes_imagem.grid(
+    row=3,
+    column=0,
+    sticky="ew",
+    padx=16,
+    pady=(0, 8)
+)
+
+botoes_imagem.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+botoes_imagem.grid_columnconfigure(
+    1,
+    weight=1
+)
+
+
+ctk.CTkButton(
+    botoes_imagem,
+    text="📷  Selecionar imagem",
+    height=34,
+    corner_radius=9,
+    fg_color="#334155",
+    hover_color="#475569",
     command=selecionar_imagem
-).pack(side="left", expand=True, fill="x", padx=5)
+).grid(
+    row=0,
+    column=0,
+    sticky="ew",
+    padx=(0, 5)
+)
 
-tk.Button(
-    frame_botoes_img,
-    text="📋 Colar (Ctrl+V)",
+
+ctk.CTkButton(
+    botoes_imagem,
+    text="📋  Colar (Ctrl+V)",
+    height=34,
+    corner_radius=9,
+    fg_color="#334155",
+    hover_color="#475569",
     command=colar_imagem
-).pack(side="left", expand=True, fill="x", padx=5)
+).grid(
+    row=0,
+    column=1,
+    sticky="ew",
+    padx=(5, 0)
+)
 
-# label status
-label_imagem = tk.Label(
-    frame_imagem,
+
+label_imagem = ctk.CTkLabel(
+    imagem_frame,
     text="Nenhuma imagem selecionada",
-    bg="#f8f9fb",
-    fg="#777"
+    font=("Segoe UI", 11),
+    text_color=TEXT_SECONDARY
 )
-label_imagem.pack(pady=(5, 10))
 
-preview_label = tk.Label(frame_imagem, bg="#f8f9fb")
-preview_label.pack(pady=(0, 10))
+label_imagem.grid(
+    row=4,
+    column=0,
+    pady=(0, 8)
+)
 
-tk.Button(frame, text="➕ Adicionar tarefa", bg="#1976d2", fg="white", command=adicionar_tarefa).pack(fill="x", pady=10)
 
-tk.Label(frame, text="Lista das tarefas a serem adicionadas", bg="white", font=("Segoe UI", 10, "bold")).pack(anchor="w")
-lista = tk.Listbox(frame, height=10)
-lista.pack(fill="both", expand=True)
+preview_label = ctk.CTkLabel(
+    imagem_frame,
+    text="Nenhum preview",
+    width=500,
+    height=100,
+    fg_color="#0B1220",
+    corner_radius=10,
+    text_color="#64748B"
+)
 
-frame_botoes = tk.Frame(frame, bg="white")
-frame_botoes.pack(fill="x", pady=10)
+preview_label.grid(
+    row=5,
+    column=0,
+    padx=16,
+    pady=(0, 14)
+)
 
-# BOTOES
 
-btn_remover = tk.Button(
-    frame_botoes,
-    text="❌ Remover",
-    bg="#e53935",
-    fg="white",
+ctk.CTkButton(
+    main_frame,
+    text="➕  Adicionar tarefa",
+    height=40,
+    corner_radius=10,
+    font=("Segoe UI", 13, "bold"),
+    fg_color=BLUE,
+    hover_color=BLUE_HOVER,
+    command=adicionar_tarefa
+).grid(
+    row=3,
+    column=0,
+    sticky="ew",
+    padx=24,
+    pady=(8, 12)
+)
+
+
+lista_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+
+lista_frame.grid(
+    row=4,
+    column=0,
+    sticky="nsew",
+    padx=24,
+    pady=(0, 8)
+)
+
+lista_frame.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+lista_frame.grid_rowconfigure(
+    1,
+    weight=1
+)
+
+
+ctk.CTkLabel(
+    lista_frame,
+    text="Tarefas adicionadas",
+    font=("Segoe UI", 15, "bold"),
+    text_color=TEXT_PRIMARY
+).grid(
+    row=0,
+    column=0,
+    sticky="w",
+    pady=(0, 6)
+)
+
+
+lista = ctk.CTkTextbox(
+    lista_frame,
+    height=130,
+    corner_radius=10,
+    fg_color="#0B1220",
+    border_width=1,
+    border_color=BORDER_COLOR,
+    font=("Segoe UI", 12)
+)
+
+lista.grid(
+    row=1,
+    column=0,
+    sticky="nsew"
+)
+
+lista.configure(
+    state="disabled"
+)
+
+atualizar_lista()
+
+
+botoes_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+
+botoes_frame.grid(
+    row=5,
+    column=0,
+    sticky="ew",
+    padx=24,
+    pady=(4, 10)
+)
+
+botoes_frame.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+botoes_frame.grid_columnconfigure(
+    1,
+    weight=1
+)
+
+botoes_frame.grid_columnconfigure(
+    2,
+    weight=2
+)
+
+
+ctk.CTkButton(
+    botoes_frame,
+    text="❌  Remover",
+    height=38,
+    corner_radius=10,
+    fg_color=RED,
+    hover_color=RED_HOVER,
     command=remover_tarefa
+).grid(
+    row=0,
+    column=0,
+    sticky="ew",
+    padx=(0, 5)
 )
-btn_remover.pack(side="left", expand=True, fill="x", padx=5)
 
-btn_limpar = tk.Button(
-    frame_botoes,
-    text="🧹 Limpar tudo",
-    bg="#ff9800",
-    fg="white",
+
+ctk.CTkButton(
+    botoes_frame,
+    text="🧹  Limpar tudo",
+    height=38,
+    corner_radius=10,
+    fg_color=ORANGE,
+    hover_color=ORANGE_HOVER,
     command=limpar_tarefas
+).grid(
+    row=0,
+    column=1,
+    sticky="ew",
+    padx=5
 )
-btn_limpar.pack(side="left", expand=True, fill="x", padx=5)
 
-btn_iniciar = tk.Button(
-    frame_botoes,
-    text="▶ Iniciar",
-    bg="#4CAF50",
-    fg="white",
+
+ctk.CTkButton(
+    botoes_frame,
+    text="▶  Iniciar automação",
+    height=38,
+    corner_radius=10,
+    font=("Segoe UI", 13, "bold"),
+    fg_color=GREEN,
+    hover_color=GREEN_HOVER,
     command=iniciar
+).grid(
+    row=0,
+    column=2,
+    sticky="ew",
+    padx=(5, 0)
 )
-btn_iniciar.pack(side="left", expand=True, fill="x", padx=5)
 
-text_log = tk.Text(frame, height=10, bg="#111", fg="#0f0")
-text_log.pack(fill="both", expand=True)
+
+log_frame = ctk.CTkFrame(
+    main_frame,
+    fg_color="transparent"
+)
+
+log_frame.grid(
+    row=6,
+    column=0,
+    sticky="nsew",
+    padx=24,
+    pady=(0, 20)
+)
+
+log_frame.grid_columnconfigure(
+    0,
+    weight=1
+)
+
+log_frame.grid_rowconfigure(
+    1,
+    weight=1
+)
+
+
+ctk.CTkLabel(
+    log_frame,
+    text="Log da automação",
+    font=("Segoe UI", 15, "bold"),
+    text_color=TEXT_PRIMARY
+).grid(
+    row=0,
+    column=0,
+    sticky="w",
+    pady=(0, 6)
+)
+
+
+text_log = ctk.CTkTextbox(
+    log_frame,
+    height=120,
+    corner_radius=10,
+    fg_color="#080D16",
+    border_width=1,
+    border_color=BORDER_COLOR,
+    font=("Consolas", 11),
+    text_color="#CBD5E1"
+)
+
+text_log.grid(
+    row=1,
+    column=0,
+    sticky="nsew"
+)
+
+text_log.configure(
+    state="disabled"
+)
 
 janela.mainloop()
