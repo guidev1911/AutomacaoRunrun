@@ -125,21 +125,30 @@ def mostrar_preview(caminho):
 
 
 def atualizar_lista():
-    lista.configure(state="normal")
-    lista.delete("1.0", "end")
+    for child in lista.winfo_children():
+        child.destroy()
 
-    if not has_tasks():
-        lista.insert("end", "Nenhuma tarefa adicionada.")
+    tarefas_atual = get_tasks()
+    if not tarefas_atual:
+        ctk.CTkLabel(
+            lista,
+            text="Nenhuma tarefa adicionada.",
+            font=("Segoe UI", 12),
+            text_color=TEXT_SECONDARY,
+            anchor="w"
+        ).grid(row=0, column=0, sticky="ew", padx=12, pady=12)
     else:
-        for i, tarefa in enumerate(get_tasks(), start=1):
+        for i, tarefa in enumerate(tarefas_atual, start=1):
             nome_imagem = os.path.basename(tarefa["imagem"])
-            lista.insert(
-                "end",
-                f"{i}.  {tarefa['titulo']}\n"
-                f"    📷 {nome_imagem}\n\n"
-            )
-
-    lista.configure(state="disabled")
+            ctk.CTkLabel(
+                lista,
+                text=f"{i}. {tarefa['titulo']}\n    📷 {nome_imagem}",
+                font=("Segoe UI", 12),
+                text_color=TEXT_PRIMARY,
+                anchor="w",
+                justify="left",
+                wraplength=760
+            ).grid(row=i-1, column=0, sticky="ew", padx=12, pady=(8 if i > 1 else 12, 8))
 
 
 def adicionar_tarefa():
@@ -290,15 +299,14 @@ def run_app():
     ctk.CTkButton(scroll_frame, text="➕  Adicionar tarefa", height=40, corner_radius=10, font=("Segoe UI", 13, "bold"), fg_color=BLUE, hover_color=BLUE_HOVER, command=adicionar_tarefa).grid(row=3, column=0, sticky="ew", padx=24, pady=(8, 12))
 
     lista_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
-    lista_frame.grid(row=4, column=0, sticky="nsew", padx=24, pady=(0, 8))
+    lista_frame.grid(row=4, column=0, sticky="ew", padx=24, pady=(0, 8))
     lista_frame.grid_columnconfigure(0, weight=1)
-    lista_frame.grid_rowconfigure(1, weight=1)
 
     ctk.CTkLabel(lista_frame, text="Tarefas adicionadas", font=("Segoe UI", 15, "bold"), text_color=TEXT_PRIMARY).grid(row=0, column=0, sticky="w", pady=(0, 6))
 
-    lista = ctk.CTkTextbox(lista_frame, height=130, corner_radius=10, fg_color="#0B1220", border_width=1, border_color=BORDER_COLOR, font=("Segoe UI", 12))
-    lista.grid(row=1, column=0, sticky="nsew")
-    lista.configure(state="disabled")
+    lista = ctk.CTkFrame(lista_frame, fg_color="#0B1220", border_width=1, border_color=BORDER_COLOR, corner_radius=10)
+    lista.grid(row=1, column=0, sticky="ew")
+    lista.grid_columnconfigure(0, weight=1)
     atualizar_lista()
 
     botoes_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
