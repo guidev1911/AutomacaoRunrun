@@ -2,6 +2,7 @@ import os
 import threading
 import tempfile
 import traceback
+import tkinter as tk
 from tkinter import messagebox, filedialog
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from PIL import ImageGrab, Image, ImageTk
@@ -221,19 +222,37 @@ def run_app():
     janela.configure(bg=BG_COLOR)
     janela.bind("<Control-v>", lambda e: colar_imagem())
 
-    main_frame = ctk.CTkFrame(janela, corner_radius=24, fg_color=CARD_COLOR, border_width=1, border_color=BORDER_COLOR)
-    main_frame.pack(fill="both", expand=True, padx=18, pady=18)
-    main_frame.grid_columnconfigure(0, weight=1)
-    main_frame.grid_rowconfigure(4, weight=1)
-    main_frame.grid_rowconfigure(6, weight=1)
+    canvas = tk.Canvas(janela, bg=BG_COLOR, highlightthickness=0)
+    scrollbar = tk.Scrollbar(janela, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
 
-    header = ctk.CTkFrame(main_frame, fg_color="transparent")
+    scrollbar.pack(side="right", fill="y")
+    canvas.pack(side="left", fill="both", expand=True)
+
+    scroll_frame = ctk.CTkFrame(canvas, corner_radius=24, fg_color=CARD_COLOR, border_width=1, border_color=BORDER_COLOR)
+    scroll_window = canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+
+    def update_scroll_region(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
+    scroll_frame.bind("<Configure>", update_scroll_region)
+
+    def _on_mousewheel(event):
+        canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+    scroll_frame.grid_columnconfigure(0, weight=1)
+    scroll_frame.grid_rowconfigure(4, weight=1)
+    scroll_frame.grid_rowconfigure(6, weight=1)
+
+    header = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     header.grid(row=0, column=0, sticky="ew", padx=24, pady=(20, 8))
 
     ctk.CTkLabel(header, text="Automação de Tarefas", font=("Segoe UI", 22, "bold"), text_color=TEXT_PRIMARY).pack(anchor="w")
     ctk.CTkLabel(header, text="Crie e finalize tarefas automaticamente no Runrun.it.", font=("Segoe UI", 12), text_color=TEXT_SECONDARY).pack(anchor="w", pady=(3, 0))
 
-    titulo_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+    titulo_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     titulo_frame.grid(row=1, column=0, sticky="ew", padx=24, pady=(5, 8))
     titulo_frame.grid_columnconfigure(0, weight=1)
 
@@ -242,7 +261,7 @@ def run_app():
     entry_titulo = ctk.CTkEntry(titulo_frame, height=36, corner_radius=10, placeholder_text="Digite o título da tarefa", fg_color=INPUT_COLOR, border_color=INPUT_BORDER)
     entry_titulo.grid(row=1, column=0, sticky="ew")
 
-    imagem_frame = ctk.CTkFrame(main_frame, corner_radius=16, fg_color="#0F1A2B", border_width=1, border_color=BORDER_COLOR)
+    imagem_frame = ctk.CTkFrame(scroll_frame, corner_radius=16, fg_color="#0F1A2B", border_width=1, border_color=BORDER_COLOR)
     imagem_frame.grid(row=2, column=0, sticky="ew", padx=24, pady=8)
     imagem_frame.grid_columnconfigure(0, weight=1)
 
@@ -268,9 +287,9 @@ def run_app():
     preview_label = ctk.CTkLabel(imagem_frame, text="Nenhum preview", width=500, height=100, fg_color="#0B1220", corner_radius=10, text_color="#64748B")
     preview_label.grid(row=5, column=0, padx=16, pady=(0, 14))
 
-    ctk.CTkButton(main_frame, text="➕  Adicionar tarefa", height=40, corner_radius=10, font=("Segoe UI", 13, "bold"), fg_color=BLUE, hover_color=BLUE_HOVER, command=adicionar_tarefa).grid(row=3, column=0, sticky="ew", padx=24, pady=(8, 12))
+    ctk.CTkButton(scroll_frame, text="➕  Adicionar tarefa", height=40, corner_radius=10, font=("Segoe UI", 13, "bold"), fg_color=BLUE, hover_color=BLUE_HOVER, command=adicionar_tarefa).grid(row=3, column=0, sticky="ew", padx=24, pady=(8, 12))
 
-    lista_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+    lista_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     lista_frame.grid(row=4, column=0, sticky="nsew", padx=24, pady=(0, 8))
     lista_frame.grid_columnconfigure(0, weight=1)
     lista_frame.grid_rowconfigure(1, weight=1)
@@ -282,7 +301,7 @@ def run_app():
     lista.configure(state="disabled")
     atualizar_lista()
 
-    botoes_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+    botoes_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     botoes_frame.grid(row=5, column=0, sticky="ew", padx=24, pady=(4, 10))
     botoes_frame.grid_columnconfigure(0, weight=1)
     botoes_frame.grid_columnconfigure(1, weight=1)
@@ -292,7 +311,7 @@ def run_app():
     ctk.CTkButton(botoes_frame, text="🧹  Limpar tudo", height=38, corner_radius=10, fg_color=ORANGE, hover_color=ORANGE_HOVER, command=limpar_tarefas).grid(row=0, column=1, sticky="ew", padx=5)
     ctk.CTkButton(botoes_frame, text="▶  Iniciar automação", height=38, corner_radius=10, font=("Segoe UI", 13, "bold"), fg_color=GREEN, hover_color=GREEN_HOVER, command=iniciar).grid(row=0, column=2, sticky="ew", padx=(5, 0))
 
-    log_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+    log_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     log_frame.grid(row=6, column=0, sticky="nsew", padx=24, pady=(0, 20))
     log_frame.grid_columnconfigure(0, weight=1)
     log_frame.grid_rowconfigure(1, weight=1)
@@ -303,4 +322,8 @@ def run_app():
     text_log.grid(row=1, column=0, sticky="nsew")
     text_log.configure(state="disabled")
 
+    def resize_canvas(event):
+        canvas.itemconfig(scroll_window, width=event.width)
+
+    canvas.bind("<Configure>", resize_canvas)
     janela.mainloop()
