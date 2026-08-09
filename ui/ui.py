@@ -36,6 +36,7 @@ text_log = None
 label_imagem = None
 preview_label = None
 lista = None
+selected_index = None
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -124,6 +125,21 @@ def mostrar_preview(caminho):
         preview_label.configure(image="", text="Erro ao carregar preview")
 
 
+def select_item(index):
+    """Mark an item as selected by index and update visuals."""
+    global selected_index
+    selected_index = index
+    # update visuals
+    for idx, child in enumerate(lista.winfo_children()):
+        try:
+            if idx == selected_index:
+                child.configure(border_color=BLUE)
+            else:
+                child.configure(border_color=BORDER_COLOR)
+        except Exception:
+            pass
+
+
 def atualizar_lista():
     for child in lista.winfo_children():
         child.destroy()
@@ -140,15 +156,49 @@ def atualizar_lista():
     else:
         for i, tarefa in enumerate(tarefas_atual, start=1):
             nome_imagem = os.path.basename(tarefa["imagem"])
-            ctk.CTkLabel(
+            item_frame = ctk.CTkFrame(
                 lista,
-                text=f"{i}. {tarefa['titulo']}\n    📷 {nome_imagem}",
-                font=("Segoe UI", 12),
+                fg_color="#111827",
+                corner_radius=12,
+                border_width=1,
+                border_color=BORDER_COLOR
+            )
+            item_frame.grid(row=i-1, column=0, sticky="ew", padx=10, pady=(6 if i > 1 else 10, 6))
+            item_frame.grid_columnconfigure(0, weight=1)
+            label_title = ctk.CTkLabel(
+                item_frame,
+                text=f"{i}. {tarefa['titulo']}",
+                font=("Segoe UI", 14, "bold"),
                 text_color=TEXT_PRIMARY,
                 anchor="w",
                 justify="left",
-                wraplength=760
-            ).grid(row=i-1, column=0, sticky="ew", padx=12, pady=(8 if i > 1 else 12, 8))
+                wraplength=720
+            )
+            label_title.grid(row=0, column=0, sticky="ew", padx=10, pady=(8, 2))
+
+            label_sub = ctk.CTkLabel(
+                item_frame,
+                text=f"📷 {nome_imagem}",
+                font=("Segoe UI", 11),
+                text_color=TEXT_SECONDARY,
+                anchor="w",
+                justify="left",
+                wraplength=720
+            )
+            label_sub.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
+
+            # bind clicks to select the item (frame and its labels)
+            idx = i - 1
+            item_frame.bind("<Button-1>", lambda e, ix=idx: select_item(ix))
+            label_title.bind("<Button-1>", lambda e, ix=idx: select_item(ix))
+            label_sub.bind("<Button-1>", lambda e, ix=idx: select_item(ix))
+
+            # if this was previously selected, style it
+            if selected_index is not None and selected_index == (i - 1):
+                try:
+                    item_frame.configure(border_color=BLUE)
+                except Exception:
+                    pass
 
 
 def adicionar_tarefa():
@@ -179,14 +229,18 @@ def limpar_anexo():
 
 
 def remover_tarefa():
-    selecionado = lista.tag_ranges("sel")
-    if not selecionado:
+    global selected_index
+    if selected_index is None:
         messagebox.showwarning("Atenção", "Selecione uma tarefa para remover!")
         return
 
-    linha = int(lista.index(selecionado[0]).split(".")[0])
-    index = linha - 1
-    remove_task(index)
+    try:
+        remove_task(selected_index)
+    except Exception as e:
+        messagebox.showerror("Erro", f"Não foi possível remover a tarefa: {e}")
+        return
+
+    selected_index = None
     atualizar_lista()
 
 
