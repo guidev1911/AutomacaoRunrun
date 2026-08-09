@@ -7,7 +7,7 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 from PIL import ImageGrab, Image, ImageTk
 import customtkinter as ctk
 
-from constants import (
+from config.constants import (
     BG_COLOR,
     BORDER_COLOR,
     CARD_COLOR,

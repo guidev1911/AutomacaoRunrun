@@ -1,7 +1,7 @@
 import keyring
 import time
 from playwright.sync_api import sync_playwright
-from constants import SERVICE_NAME
+from config.constants import SERVICE_NAME
 
 
 def executar_bot(tarefas, logger):
