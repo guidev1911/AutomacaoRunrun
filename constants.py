@@ -1,0 +1,30 @@
+SERVICE_NAME = "RunrunBot"
+
+BG_COLOR = "#0f172a"
+CARD_COLOR = "#111827"
+BORDER_COLOR = "#334155"
+
+TEXT_PRIMARY = "#F8FAFC"
+TEXT_SECONDARY = "#94A3B8"
+
+INPUT_COLOR = "#1E293B"
+INPUT_BORDER = "#475569"
+
+BLUE = "#2563EB"
+BLUE_HOVER = "#1D4ED8"
+
+RED = "#DC2626"
+RED_HOVER = "#B91C1C"
+
+ORANGE = "#F59E0B"
+ORANGE_HOVER = "#D97706"
+
+GREEN = "#16A34A"
+GREEN_HOVER = "#15803D"
+
+IMAGE_FILETYPES = [
+    (
+        "Imagens",
+        "*.png *.jpg *.jpeg"
+    )
+]
