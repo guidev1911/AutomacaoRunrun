@@ -223,10 +223,10 @@ def run_app():
     janela.bind("<Control-v>", lambda e: colar_imagem())
 
     canvas = tk.Canvas(janela, bg=BG_COLOR, highlightthickness=0)
-    scrollbar = tk.Scrollbar(janela, orient="vertical", command=canvas.yview)
+    scrollbar = tk.Scrollbar(janela, orient="vertical", command=canvas.yview, width=0, troughcolor=BG_COLOR, bg=BG_COLOR, highlightthickness=0)
     canvas.configure(yscrollcommand=scrollbar.set)
 
-    scrollbar.pack(side="right", fill="y")
+    # Barra invisível: ainda usada para o cálculo de rolagem, mas não aparece na UI.
     canvas.pack(side="left", fill="both", expand=True)
 
     scroll_frame = ctk.CTkFrame(canvas, corner_radius=24, fg_color=CARD_COLOR, border_width=1, border_color=BORDER_COLOR)
