@@ -25,8 +25,8 @@ from config.constants import (
     TEXT_SECONDARY,
     IMAGE_FILETYPES,
 )
-from task_manager import add_task, clear_tasks, get_tasks, has_tasks, remove_task
-from browser_automation import executar_bot
+from core.task_manager import add_task, clear_tasks, get_tasks, has_tasks, remove_task
+from core.browser_automation import executar_bot
 
 
 imagem_temp = None
