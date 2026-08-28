@@ -3,6 +3,7 @@ import threading
 import tempfile
 import traceback
 import tkinter as tk
+from core.finalizar_os import executar_finalizar_os
 from tkinter import messagebox, filedialog
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from PIL import ImageGrab, Image, ImageTk
@@ -259,6 +260,37 @@ def limpar_tarefas():
 def iniciar():
     threading.Thread(target=executar_bot_thread, daemon=True).start()
 
+def iniciar_finalizar_os():
+    threading.Thread(
+    target=executar_finalizar_os_thread,
+    daemon=True
+    ).start()
+
+def executar_finalizar_os_thread():
+    try:
+        log("")
+
+        log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        log("🔧 FINALIZAR OS")
+        log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        executar_finalizar_os(
+            log
+        )
+
+    except Exception as e:
+
+        log("")
+
+        log("❌ ERRO NA AUTOMAÇÃO FINALIZAR OS")
+
+        log(
+            str(e)
+        )
+
+        log(
+            traceback.format_exc()
+        )
 
 def executar_bot_thread():
     try:
@@ -368,10 +400,69 @@ def run_app():
     botoes_frame.grid_columnconfigure(0, weight=1)
     botoes_frame.grid_columnconfigure(1, weight=1)
     botoes_frame.grid_columnconfigure(2, weight=2)
+    botoes_frame.grid_columnconfigure(3, weight=2)
 
-    ctk.CTkButton(botoes_frame, text="❌  Remover", height=38, corner_radius=10, fg_color=RED, hover_color=RED_HOVER, command=remover_tarefa).grid(row=0, column=0, sticky="ew", padx=(0, 5))
-    ctk.CTkButton(botoes_frame, text="🧹  Limpar tudo", height=38, corner_radius=10, fg_color=ORANGE, hover_color=ORANGE_HOVER, command=limpar_tarefas).grid(row=0, column=1, sticky="ew", padx=5)
-    ctk.CTkButton(botoes_frame, text="▶  Iniciar automação", height=38, corner_radius=10, font=("Segoe UI", 13, "bold"), fg_color=GREEN, hover_color=GREEN_HOVER, command=iniciar).grid(row=0, column=2, sticky="ew", padx=(5, 0))
+    ctk.CTkButton(
+    botoes_frame,
+    text="❌ Remover",
+    height=38,
+    corner_radius=10,
+    fg_color=RED,
+    hover_color=RED_HOVER,
+    command=remover_tarefa
+    ).grid(
+    row=0,
+    column=0,
+    sticky="ew",
+    padx=(0, 5)
+    )
+
+    ctk.CTkButton(
+    botoes_frame,
+    text="🧹 Limpar tudo",
+    height=38,
+    corner_radius=10,
+    fg_color=ORANGE,
+    hover_color=ORANGE_HOVER,
+    command=limpar_tarefas
+    ).grid(
+    row=0,
+    column=1,
+    sticky="ew",
+    padx=5
+    )
+
+    ctk.CTkButton(
+    botoes_frame,
+    text="▶ Iniciar automação",
+    height=38,
+    corner_radius=10,
+    font=("Segoe UI", 13, "bold"),
+    fg_color=GREEN,
+    hover_color=GREEN_HOVER,
+    command=iniciar
+    ).grid(
+    row=0,
+    column=2,
+    sticky="ew",
+    padx=5
+    )
+
+    ctk.CTkButton(
+    botoes_frame,
+    text="🔧 Finalizar OS",
+    height=38,
+    corner_radius=10,
+    font=("Segoe UI", 13, "bold"),
+    fg_color=BLUE,
+    hover_color=BLUE_HOVER,
+    command=iniciar_finalizar_os
+    ).grid(
+    row=0,
+    column=3,
+    sticky="ew",
+    padx=(5, 0)
+    )
 
     log_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     log_frame.grid(row=6, column=0, sticky="nsew", padx=24, pady=(0, 20))
