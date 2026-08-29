@@ -103,7 +103,7 @@ def colar_imagem():
     img.save(temp_path, "PNG")
     imagem_temp = temp_path
 
-    label_imagem.configure(text="📋 Imagem colada do print")
+    label_imagem.configure(text="Imagem colada do print")
     mostrar_preview(temp_path)
 
 
@@ -188,13 +188,11 @@ def atualizar_lista():
             )
             label_sub.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
 
-            # bind clicks to select the item (frame and its labels)
             idx = i - 1
             item_frame.bind("<Button-1>", lambda e, ix=idx: select_item(ix))
             label_title.bind("<Button-1>", lambda e, ix=idx: select_item(ix))
             label_sub.bind("<Button-1>", lambda e, ix=idx: select_item(ix))
 
-            # if this was previously selected, style it
             if selected_index is not None and selected_index == (i - 1):
                 try:
                     item_frame.configure(border_color=BLUE)
@@ -321,7 +319,6 @@ def run_app():
     scrollbar = tk.Scrollbar(janela, orient="vertical", command=canvas.yview, width=0, troughcolor=BG_COLOR, bg=BG_COLOR, highlightthickness=0)
     canvas.configure(yscrollcommand=scrollbar.set)
 
-    # Barra invisível: ainda usada para o cálculo de rolagem, mas não aparece na UI.
     canvas.pack(side="left", fill="both", expand=True)
 
     scroll_frame = ctk.CTkFrame(canvas, corner_radius=24, fg_color=CARD_COLOR, border_width=1, border_color=BORDER_COLOR)
