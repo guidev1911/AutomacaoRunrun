@@ -46,8 +46,8 @@ def executar_finalizar_os(logger):
             "Credenciais do DETRAN não encontradas!"
         )
 
-    logger("🚀 Iniciando automação Finalizar OS...")
-    logger("🌐 Abrindo navegador...")
+    logger("Iniciando automação Finalizar OS...")
+    logger("Abrindo navegador...")
 
     options = Options()
 
@@ -79,7 +79,7 @@ def executar_finalizar_os(logger):
 
     try:
 
-        logger("🔐 Acessando Intranet...")
+        logger("Acessando Intranet...")
 
         senha_url = quote(
             senha_intr
@@ -114,11 +114,11 @@ def executar_finalizar_os(logger):
         token = token_element.text.strip()
 
         logger(
-            "✅ Token obtido com sucesso"
+            "Token obtido com sucesso"
         )
 
         logger(
-            "🔐 Acessando Portal DETRAN..."
+            "Acessando Portal DETRAN..."
         )
 
         driver.get(
@@ -157,7 +157,7 @@ def executar_finalizar_os(logger):
         )
 
         logger(
-            "🚀 Realizando login..."
+            "Realizando login..."
         )
 
         botao_confirmar = wait.until(
@@ -180,11 +180,11 @@ def executar_finalizar_os(logger):
         )
 
         logger(
-            "✅ Login realizado com sucesso"
+            "Login realizado com sucesso"
         )
 
         logger(
-            "📋 Acessando fila de Ordens de Serviço..."
+            "Acessando fila de Ordens de Serviço..."
         )
 
         wait.until(
@@ -228,11 +228,11 @@ def executar_finalizar_os(logger):
         )
 
         logger(
-            "✅ Setor selecionado: Suporte de Equipamentos"
+            "Setor selecionado: Suporte de Equipamentos"
         )
 
         logger(
-            "👀 Monitorando novas Ordens de Serviço..."
+            "Monitorando novas Ordens de Serviço..."
         )
 
         os_anteriores = set()
@@ -242,7 +242,7 @@ def executar_finalizar_os(logger):
             if not driver.service.process:
 
                 logger(
-                    "⚠️ Navegador foi encerrado."
+                    "Navegador foi encerrado."
                 )
 
                 break
@@ -323,7 +323,7 @@ def executar_finalizar_os(logger):
                     )
 
                     logger(
-                        "🚨 NOVAS OS DETECTADAS:"
+                        "NOVAS OS DETECTADAS:"
                     )
 
                     logger(
@@ -335,7 +335,7 @@ def executar_finalizar_os(logger):
             except Exception as e:
 
                 logger(
-                    f"⚠️ Monitoramento encerrado: {e}"
+                    f"Monitoramento encerrado: {e}"
                 )
 
                 break
@@ -347,7 +347,7 @@ def executar_finalizar_os(logger):
     finally:
 
         logger(
-            "🛑 Encerrando automação Finalizar OS..."
+            "Encerrando automação Finalizar OS..."
         )
 
         try:
