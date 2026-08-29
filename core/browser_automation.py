@@ -15,7 +15,7 @@ def executar_bot(tarefas, logger):
     if not email or not senha:
         raise ValueError("Credenciais não encontradas!")
 
-    logger("🚀 Iniciando automação...")
+    logger("Iniciando automação...")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, channel="chrome")
@@ -27,13 +27,13 @@ def executar_bot(tarefas, logger):
         page.click("button[type='submit']")
         page.wait_for_selector("[data-testid='task-card']")
 
-        logger("✅ Login realizado")
+        logger("Login realizado")
 
         for t in tarefas:
             titulo = t["titulo"]
             imagem = t["imagem"]
 
-            logger(f"📌 Criando: {titulo}")
+            logger(f"Criando: {titulo}")
 
             clone_card = page.locator(
                 "[data-testid='task-card']"
@@ -83,7 +83,7 @@ def executar_bot(tarefas, logger):
             task.wait_for()
             task.click()
 
-            logger("✏️ Limpando identificador do título...")
+            logger("Limpando identificador do título...")
 
             botao_editar = page.locator(
                 f"[data-testid='inline-editor-change']:has-text('##{uid}')"
@@ -101,7 +101,7 @@ def executar_bot(tarefas, logger):
             campo_titulo.fill(titulo)
             campo_titulo.press("Enter")
 
-            logger("📂 Abrindo opções da tarefa...")
+            logger("Abrindo opções da tarefa...")
 
             page.locator("div").filter(
                 has_text=re.compile(
@@ -112,7 +112,7 @@ def executar_bot(tarefas, logger):
             page.wait_for_timeout(300)
 
 
-            logger("📝 Clicando na aba Descrição...")
+            logger("Clicando na aba Descrição...")
 
             page.get_by_role(
                 "tab",
@@ -121,9 +121,9 @@ def executar_bot(tarefas, logger):
 
             page.wait_for_timeout(500)
 
-            logger("✅ Aba Descrição selecionada")
+            logger("Aba Descrição selecionada")
 
-            logger("🖼️ Adicionando imagem...")
+            logger("Adicionando imagem...")
 
             with page.expect_file_chooser() as fc_info:
                 page.locator("button.ql-image").click()
@@ -177,14 +177,14 @@ def executar_bot(tarefas, logger):
                 name="Adicionar"
             ).click()
 
-            logger("⏳ Aguardando tempo ser aplicado...")
+            logger("Aguardando tempo ser aplicado...")
 
             page.wait_for_selector(
                 "span[role='button']:has-text('00h10')",
                 timeout=5000
             )
 
-            logger("✅ Tempo aplicado com sucesso")
+            logger("Tempo aplicado com sucesso")
 
             page.locator(
                 "[data-testid='close-modal-button']"
@@ -192,7 +192,7 @@ def executar_bot(tarefas, logger):
 
             page.wait_for_timeout(500)
 
-            logger("⏳ Aguardando botão de entrega...")
+            logger("Aguardando botão de entrega...")
 
             botao_entregar = page.locator(
                 "[data-onboarding='taskshow-deliver-button']"
@@ -202,7 +202,7 @@ def executar_bot(tarefas, logger):
 
             page.wait_for_timeout(1500)
 
-            logger("🚀 Tentando entregar tarefa...")
+            logger("Tentando entregar tarefa...")
 
             try:
                 botao_entregar.click()
@@ -212,7 +212,7 @@ def executar_bot(tarefas, logger):
 
             page.wait_for_timeout(2000)
 
-            logger("✅ Tarefa entregue!")
+            logger("Tarefa entregue!")
 
             page.goto(
                 "https://app.runrun.it/pt-BR/boards"
@@ -224,6 +224,6 @@ def executar_bot(tarefas, logger):
 
         browser.close()
 
-    logger("🎉 Processo finalizado com sucesso!")
+    logger("Processo finalizado com sucesso!")
 
     return True
