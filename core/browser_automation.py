@@ -85,17 +85,9 @@ def executar_bot(tarefas, logger):
 
             logger("Limpando identificador do título...")
 
-            botao_editar = page.locator(
-                f"[data-testid='inline-editor-change']:has-text('##{uid}')"
-            )
-
-            botao_editar.wait_for()
-            botao_editar.scroll_into_view_if_needed()
-            botao_editar.click()
-
             campo_titulo = page.locator(
-                "[data-testid='input-editor-without-mask']"
-            )
+                "textarea[placeholder='Adicionar']"
+            ).first
 
             campo_titulo.wait_for()
             campo_titulo.fill(titulo)
