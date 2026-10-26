@@ -29,6 +29,11 @@ from config.constants import (
 )
 from core.task_manager import add_task, clear_tasks, get_tasks, has_tasks, remove_task
 from core.browser_automation import executar_bot
+from config.user_preferences import (
+    DEFAULT_FINALIZAR_OS_PREFERENCES,
+    carregar_preferencias_finalizar_os,
+    salvar_preferencias_finalizar_os,
+)
 
 
 imagem_temp = None
@@ -38,6 +43,8 @@ label_imagem = None
 preview_label = None
 lista = None
 selected_index = None
+entry_atendente_os = None
+entry_mensagem_conclusao_os = None
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -259,12 +266,72 @@ def iniciar():
     threading.Thread(target=executar_bot_thread, daemon=True).start()
 
 def iniciar_finalizar_os():
+    atendente = entry_atendente_os.get().strip()
+    mensagem_conclusao = entry_mensagem_conclusao_os.get().strip()
+
+    if not atendente:
+        messagebox.showwarning(
+            "Campo obrigatório",
+            "Informe o nome do atendente para buscar as OS."
+        )
+        return
+
+    if not mensagem_conclusao:
+        messagebox.showwarning(
+            "Campo obrigatório",
+            "Informe a mensagem de conclusão das OS."
+        )
+        return
+
+    try:
+        salvar_preferencias_finalizar_os(
+            atendente,
+            mensagem_conclusao
+        )
+    except (OSError, ValueError) as error:
+        messagebox.showerror(
+            "Erro ao salvar preferências",
+            f"Não foi possível salvar as preferências:\n{error}"
+        )
+        return
+
     threading.Thread(
-    target=executar_finalizar_os_thread,
-    daemon=True
+        target=executar_finalizar_os_thread,
+        args=(atendente, mensagem_conclusao),
+        daemon=True
     ).start()
 
-def executar_finalizar_os_thread():
+
+def salvar_preferencias_os_pela_interface():
+    atendente = entry_atendente_os.get().strip()
+    mensagem_conclusao = entry_mensagem_conclusao_os.get().strip()
+
+    if not atendente or not mensagem_conclusao:
+        messagebox.showwarning(
+            "Campos obrigatórios",
+            "Preencha o atendente e a mensagem de conclusão."
+        )
+        return
+
+    try:
+        salvar_preferencias_finalizar_os(
+            atendente,
+            mensagem_conclusao
+        )
+    except (OSError, ValueError) as error:
+        messagebox.showerror(
+            "Erro ao salvar preferências",
+            f"Não foi possível salvar as preferências:\n{error}"
+        )
+        return
+
+    messagebox.showinfo(
+        "Preferências salvas",
+        "As preferências foram salvas para esta conta do Windows."
+    )
+
+
+def executar_finalizar_os_thread(atendente, mensagem_conclusao):
     try:
         log("")
 
@@ -273,7 +340,9 @@ def executar_finalizar_os_thread():
         log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         executar_finalizar_os(
-            log
+            log,
+            atendente,
+            mensagem_conclusao
         )
 
     except Exception as e:
@@ -307,8 +376,20 @@ def executar_bot_thread():
 
 def run_app():
     global label_imagem, preview_label, lista, text_log, entry_titulo
+    global entry_atendente_os, entry_mensagem_conclusao_os
 
     janela = TkinterDnD.Tk()
+    try:
+        preferencias_finalizar_os = carregar_preferencias_finalizar_os()
+    except (OSError, ValueError) as error:
+        messagebox.showerror(
+            "Erro ao carregar preferências",
+            "Não foi possível carregar as preferências salvas. "
+            f"Os valores padrão serão usados.\n\n{error}",
+            parent=janela
+        )
+        preferencias_finalizar_os = DEFAULT_FINALIZAR_OS_PREFERENCES.copy()
+
     janela.title("Runrun Bot - Automação")
     janela.geometry("900x850")
     janela.minsize(850, 750)
@@ -336,7 +417,7 @@ def run_app():
 
     scroll_frame.grid_columnconfigure(0, weight=1)
     scroll_frame.grid_rowconfigure(4, weight=1)
-    scroll_frame.grid_rowconfigure(6, weight=1)
+    scroll_frame.grid_rowconfigure(7, weight=1)
 
     header = ctk.CTkFrame(scroll_frame, fg_color="transparent")
     header.grid(row=0, column=0, sticky="ew", padx=24, pady=(20, 8))
@@ -392,8 +473,100 @@ def run_app():
     lista.grid_columnconfigure(0, weight=1)
     atualizar_lista()
 
+    finalizar_os_frame = ctk.CTkFrame(
+        scroll_frame,
+        corner_radius=12,
+        fg_color="#0F1A2B",
+        border_width=1,
+        border_color=BORDER_COLOR
+    )
+    finalizar_os_frame.grid(
+        row=5,
+        column=0,
+        sticky="ew",
+        padx=24,
+        pady=(4, 10)
+    )
+    finalizar_os_frame.grid_columnconfigure((0, 1), weight=1)
+
+    ctk.CTkLabel(
+        finalizar_os_frame,
+        text="Finalizar OS",
+        font=("Segoe UI", 15, "bold"),
+        text_color=TEXT_PRIMARY
+    ).grid(row=0, column=0, columnspan=2, sticky="w", padx=14, pady=(10, 4))
+
+    ctk.CTkLabel(
+        finalizar_os_frame,
+        text="Atendente",
+        font=("Segoe UI", 12, "bold"),
+        text_color=TEXT_PRIMARY
+    ).grid(row=1, column=0, sticky="w", padx=(14, 6), pady=(4, 2))
+
+    ctk.CTkLabel(
+        finalizar_os_frame,
+        text="Mensagem de conclusão",
+        font=("Segoe UI", 12, "bold"),
+        text_color=TEXT_PRIMARY
+    ).grid(row=1, column=1, sticky="w", padx=(6, 14), pady=(4, 2))
+
+    entry_atendente_os = ctk.CTkEntry(
+        finalizar_os_frame,
+        height=36,
+        corner_radius=9,
+        fg_color=INPUT_COLOR,
+        border_color=INPUT_BORDER
+    )
+    entry_atendente_os.insert(
+        0,
+        preferencias_finalizar_os["atendente"]
+    )
+    entry_atendente_os.grid(
+        row=2,
+        column=0,
+        sticky="ew",
+        padx=(14, 6),
+        pady=(0, 12)
+    )
+
+    entry_mensagem_conclusao_os = ctk.CTkEntry(
+        finalizar_os_frame,
+        height=36,
+        corner_radius=9,
+        fg_color=INPUT_COLOR,
+        border_color=INPUT_BORDER
+    )
+    entry_mensagem_conclusao_os.insert(
+        0,
+        preferencias_finalizar_os["mensagem_conclusao"]
+    )
+    entry_mensagem_conclusao_os.grid(
+        row=2,
+        column=1,
+        sticky="ew",
+        padx=(6, 14),
+        pady=(0, 12)
+    )
+
+    ctk.CTkButton(
+        finalizar_os_frame,
+        text="Salvar preferências",
+        height=32,
+        corner_radius=9,
+        fg_color="#334155",
+        hover_color="#475569",
+        command=salvar_preferencias_os_pela_interface
+    ).grid(
+        row=3,
+        column=0,
+        columnspan=2,
+        sticky="ew",
+        padx=14,
+        pady=(0, 12)
+    )
+
     botoes_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
-    botoes_frame.grid(row=5, column=0, sticky="ew", padx=24, pady=(4, 10))
+    botoes_frame.grid(row=6, column=0, sticky="ew", padx=24, pady=(4, 10))
     botoes_frame.grid_columnconfigure(0, weight=1)
     botoes_frame.grid_columnconfigure(1, weight=1)
     botoes_frame.grid_columnconfigure(2, weight=2)
@@ -462,7 +635,7 @@ def run_app():
     )
 
     log_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
-    log_frame.grid(row=6, column=0, sticky="nsew", padx=24, pady=(0, 20))
+    log_frame.grid(row=7, column=0, sticky="nsew", padx=24, pady=(0, 20))
     log_frame.grid_columnconfigure(0, weight=1)
     log_frame.grid_rowconfigure(1, weight=1)
 
