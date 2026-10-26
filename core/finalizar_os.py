@@ -11,7 +11,6 @@ from selenium.webdriver.support.ui import Select
 from urllib.parse import quote
 
 SERVICE_NAME_DETRAN = "BOT_DETRAN"
-ATENDENTE_ALVO = "Guilherme Brito Souza Santos"
 
 
 def aceitar_aviso_lgpd_se_exibido(driver, wait):
@@ -36,7 +35,7 @@ def aceitar_aviso_lgpd_se_exibido(driver, wait):
     return False
 
 
-def executar_finalizar_os(logger):
+def executar_finalizar_os(logger, atendente, mensagem_conclusao):
 
 
     usuario_intr = keyring.get_password(
@@ -258,7 +257,7 @@ def executar_finalizar_os(logger):
         seletor_tabela_atendente = (
             "//table[@id='tblForm']"
             "[.//b[normalize-space(.)="
-            f"'Atendente: {ATENDENTE_ALVO}']]"
+            f"'Atendente: {atendente}']]"
         )
 
         tabela_atendente = wait.until(
@@ -288,7 +287,7 @@ def executar_finalizar_os(logger):
                 }
             )
 
-        logger(f"OS atribuídas a {ATENDENTE_ALVO}:")
+        logger(f"OS atribuídas a {atendente}:")
         if ordens_servico:
             for os_atribuida in ordens_servico:
                 logger(
@@ -375,7 +374,7 @@ def executar_finalizar_os(logger):
                 )
             )
             campo_motivo.clear()
-            campo_motivo.send_keys("providenciado")
+            campo_motivo.send_keys(mensagem_conclusao)
 
             botao_confirmar_conclusao = wait.until(
                 EC.element_to_be_clickable(
