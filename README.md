@@ -33,3 +33,11 @@ Os executáveis serão gerados na pasta:
 ```text
 C:\AutomacaoRunrun\dist\
 ```
+
+## 📸 Screenshots
+
+### Configuração de Login
+![Configuração de Login](assets/images/configLogin.png)
+
+### Runrun Bot
+![Runrun Bot](assets/images/RunRun.png)
